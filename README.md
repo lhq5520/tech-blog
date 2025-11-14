@@ -1,3 +1,5 @@
+Deployed at: [blog.weifanx.com](https://blog.weifanx.com/)
+
 # **Blog Project**
 
 Welcome to our blog platform! This project is a modern, dynamic blogging application designed to create, view, edit, and manage posts with ease. Built using **React**, **MongoDB**, and a robust API, this platform offers a seamless experience for users to explore and share content.
