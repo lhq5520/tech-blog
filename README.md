@@ -4,7 +4,7 @@ A modern, full-stack blogging platform built with React, TypeScript, Node.js, an
 
 一个现代化的全栈博客平台，使用 React、TypeScript、Node.js 和 MongoDB 构建。具有用户认证、富文本编辑和响应式设计。
 
-![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react&logoColor=white)
+![React](https://img.shields.io/badge/React-19+-61DAFB?style=flat&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat&logo=mongodb&logoColor=white)
