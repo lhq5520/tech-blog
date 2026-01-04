@@ -1,18 +1,31 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import { fetchSinglePost, updatePost } from "../api/api";
+import { fetchSinglePost, updatePost } from "../api/posts";
+import { type Post } from "../types";
 
-const Blog = ({ blog, onDelete, onEdit }) => {
-  const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({
+interface BlogProps {
+  blog: Post;
+  onDelete: (id: string) => void;
+  onEdit: (updatedblog: Post) => void;
+}
+
+type BlogFormData = {
+  title: string;
+  subtitle: string;
+  content: string;
+};
+
+const Blog = ({ blog, onDelete, onEdit }: BlogProps): React.ReactElement => {
+  const [editMode, setEditMode] = useState<boolean>(false);
+  const [formData, setFormData] = useState<BlogFormData>({
     title: blog.title,
     subtitle: blog.subtitle,
     content: "", // Initially empty, fetch when entering edit mode
   });
-  const [errors, setErrors] = useState({});
-  const [loadingContent, setLoadingContent] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loadingContent, setLoadingContent] = useState<boolean>(false);
 
   // Fetch the full blog content when entering edit mode
   const fetchContentForEdit = async () => {
@@ -32,15 +45,22 @@ const Blog = ({ blog, onDelete, onEdit }) => {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.title.trim()) newErrors.title = "Title is required.";
-    if (!formData.subtitle.trim()) newErrors.subtitle = "Subtitle is required.";
-    if (!formData.content.trim()) newErrors.content = "Content is required.";
+  const validateForm = (): Record<string, string> => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = "Title is required.";
+    }
+    if (!formData.subtitle.trim()) {
+      newErrors.subtitle = "Subtitle is required.";
+    }
+    if (!formData.content?.trim()) {
+      newErrors.content = "Content is required.";
+    }
     return newErrors;
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
@@ -51,9 +71,9 @@ const Blog = ({ blog, onDelete, onEdit }) => {
     }));
   };
 
-  const handleEditorChange = (event, editor) => {
+  const handleEditorChange = (editor: any) => {
     const data = editor.getData();
-    setFormData({ ...formData, content: data });
+    setFormData((prev) => ({ ...prev, content: data }));
 
     // Clear content error as user types
     setErrors((prevErrors) => ({
@@ -100,7 +120,7 @@ const Blog = ({ blog, onDelete, onEdit }) => {
 
   const handleDelete = () => {
     onDelete(blog._id); // Call the parent component's delete handler
-    };
+  };
 
   return (
     <div className="blog-item border-bottom py-3">
@@ -111,7 +131,9 @@ const Blog = ({ blog, onDelete, onEdit }) => {
           <form>
             {/* Title Field */}
             <div className="mb-3">
-              <label htmlFor="title" className="form-label">Title:</label>
+              <label htmlFor="title" className="form-label">
+                Title:
+              </label>
               <input
                 type="text"
                 id="title"
@@ -125,7 +147,9 @@ const Blog = ({ blog, onDelete, onEdit }) => {
 
             {/* Subtitle Field */}
             <div className="mb-3">
-              <label htmlFor="subtitle" className="form-label">Subtitle:</label>
+              <label htmlFor="subtitle" className="form-label">
+                Subtitle:
+              </label>
               <input
                 type="text"
                 id="subtitle"
@@ -134,26 +158,40 @@ const Blog = ({ blog, onDelete, onEdit }) => {
                 onChange={handleChange}
                 className="form-control"
               />
-              {errors.subtitle && <p className="text-danger">{errors.subtitle}</p>}
+              {errors.subtitle && (
+                <p className="text-danger">{errors.subtitle}</p>
+              )}
             </div>
 
             {/* Content Field */}
             <div className="mb-3">
-              <label htmlFor="content" className="form-label">Content:</label>
+              <label htmlFor="content" className="form-label">
+                Content:
+              </label>
               <CKEditor
-                editor={ClassicEditor}
+                editor={ClassicEditor as any}
                 data={formData.content}
                 onChange={handleEditorChange}
               />
-              {errors.content && <p className="text-danger">{errors.content}</p>}
+              {errors.content && (
+                <p className="text-danger">{errors.content}</p>
+              )}
             </div>
 
             {/* Save and Cancel Buttons */}
             <div className="d-flex gap-2">
-              <button type="button" className="btn btn-primary" onClick={handleSave}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSave}
+              >
                 Save
               </button>
-              <button type="button" className="btn btn-secondary" onClick={handleCancel}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleCancel}
+              >
                 Cancel
               </button>
             </div>
@@ -166,7 +204,9 @@ const Blog = ({ blog, onDelete, onEdit }) => {
             <Link to={`/blogs/${blog._id}`}>{blog.title}</Link>
           </h3>
           <p className="text-muted">{blog.subtitle}</p>
-          <p className="small text-muted">Created on: {new Date(blog.createdAt).toLocaleString()}</p>
+          <p className="small text-muted">
+            Created on: {new Date(blog.createdAt).toLocaleString()}
+          </p>
           <div dangerouslySetInnerHTML={{ __html: blog.content }} />
 
           {/* Edit and Delete Buttons */}

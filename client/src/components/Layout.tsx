@@ -1,17 +1,15 @@
-import React from "react";
+import { type ReactNode } from "react";
 import Navbar from "./Navbar"; // Import the Navbar component
-import "../App.css"; // Global CSS file
+import "../index.css"; // Global CSS file
 
-const Layout = ({ children }) => {
+const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <div>
       {/* Navbar */}
       <Navbar />
 
       {/* Main Content */}
-      <main>
-        {children}
-      </main>
+      <main>{children}</main>
     </div>
   );
 };

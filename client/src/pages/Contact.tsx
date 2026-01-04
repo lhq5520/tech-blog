@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Layout from "../components/Layout";
 import Footer from "../components/Footer"; // Import the reusable Footer component
 import PageHeader from "../components/PageHeader";
@@ -15,12 +15,12 @@ const Contact = () => {
     error: false,
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
     // Simulate form submission success
@@ -49,12 +49,12 @@ const Contact = () => {
 
       {/* Main Content */}
       <main className="mb-4">
-        <div className="container px-4 px-lg-5">
+        <div className="container px-4 px-lg-5 mb-5">
           <div className="row gx-4 gx-lg-5 justify-content-center">
             <div className="col-md-10 col-lg-8 col-xl-7">
               <p>
-                Want to get in touch? Fill out the form below to send me a message, and I
-                will get back to you as soon as possible!
+                Want to get in touch? Fill out the form below to send me a
+                message, and I will get back to you as soon as possible!
               </p>
               <div className="my-5">
                 {/* Contact Form */}
@@ -99,7 +99,7 @@ const Contact = () => {
                     <label htmlFor="phone">Phone Number</label>
                   </div>
                   <div className="form-floating mb-3">
-                    <textarea
+                    <input
                       className="form-control"
                       id="message"
                       name="message"
@@ -108,14 +108,16 @@ const Contact = () => {
                       value={formData.message}
                       onChange={handleChange}
                       required
-                    ></textarea>
+                    ></input>
                     <label htmlFor="message">Message</label>
                   </div>
                   <br />
                   {/* Success Message */}
                   {formStatus.success && (
                     <div className="text-center mb-3">
-                      <div className="fw-bolder">Form submission successful!</div>
+                      <div className="fw-bolder">
+                        Form submission successful!
+                      </div>
                       <p>Thank you for reaching out.</p>
                     </div>
                   )}

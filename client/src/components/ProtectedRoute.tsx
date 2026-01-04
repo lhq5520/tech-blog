@@ -1,9 +1,9 @@
-import React from "react";
+import { type ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";  // Use your context to get the user
+import { useAuth } from "../context/AuthContext";
 
-const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();  // Get user from context
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth(); // Get user from context
 
   if (!user) {
     // If not authenticated, redirect to login page

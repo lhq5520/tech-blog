@@ -1,16 +1,14 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./Pages/Home";
-import About from "./Pages/About";
+import Home from "./pages/Home";
+import About from "./pages/About";
 import Blogs from "./components/Blogs";
-import Contact from "./Pages/Contact";
-import WritePost from "./Pages/WritePost";
-import Login from "./Pages/Login";
-import Register from "./Pages/Register";
+import Contact from "./pages/Contact";
+import WritePost from "./pages/WritePost";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { AuthProvider } from "./context/AuthContext"; 
-import GuestbookPage from "./Pages/GuestbookPage";
-import ProfilePage from "./Pages/ProfilePage";
+import { AuthProvider } from "./context/AuthContext";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -19,13 +17,12 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          <Route path="/guessbook" element={<GuestbookPage />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/blogs/:id" element={<Blogs />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<ProfilePage />} />
-          
+
           {/* Private Route - Requires Authentication */}
           <Route
             path="/writepost"
@@ -35,7 +32,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           {/* Login Route */}
           <Route path="/login" element={<Login />} />
         </Routes>

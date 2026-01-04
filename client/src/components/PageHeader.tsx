@@ -1,6 +1,12 @@
-import React from "react";
+import { type ReactNode } from "react";
 
-const PageHeader = ({ title, subtitle, backgroundImage }) => {
+type PageHeaders = {
+  title: string;
+  subtitle: ReactNode;
+  backgroundImage: string;
+};
+
+const PageHeader = ({ title, subtitle, backgroundImage }: PageHeaders) => {
   return (
     <header
       className="masthead"

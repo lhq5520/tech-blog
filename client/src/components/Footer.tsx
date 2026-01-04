@@ -1,5 +1,3 @@
-import React from "react";
-
 const Footer = () => {
   const socialLinks = [
     {
@@ -31,7 +29,9 @@ const Footer = () => {
                   <a href={link.href} aria-label={link.label}>
                     <span className="fa-stack fa-lg">
                       <i className="fas fa-circle fa-stack-2x"></i>
-                      <i className={`${link.iconClass} fa-stack-1x fa-inverse`}></i>
+                      <i
+                        className={`${link.iconClass} fa-stack-1x fa-inverse`}
+                      ></i>
                     </span>
                   </a>
                 </li>
