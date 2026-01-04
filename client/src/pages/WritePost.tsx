@@ -4,10 +4,19 @@ import Layout from "../components/Layout";
 import PageHeader from "../components/PageHeader";
 import { createPost } from "../api/posts";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import {
+  ClassicEditor,
+  Bold,
+  Italic,
+  Essentials,
+  Paragraph,
+  Heading,
+  Link,
+  List,
+  BlockQuote,
+} from "ckeditor5";
+import "ckeditor5/ckeditor5.css";
 import { useAuth } from "../context/AuthContext";
-
-const licenseKey = import.meta.env.VITE_CKEDITOR_LICENSE_KEY;
 
 const WritePost = () => {
   const [formData, setFormData] = useState({
@@ -132,12 +141,36 @@ const WritePost = () => {
               Content:
             </label>
             <CKEditor
-              config={{
-                licenseKey: licenseKey, // license key from cke
-              }}
-              editor={ClassicEditor as any}
+              editor={ClassicEditor}
               data={formData.content}
               onChange={handleEditorChange}
+              config={{
+                licenseKey: "GPL",
+                plugins: [
+                  Essentials,
+                  Bold,
+                  Italic,
+                  Paragraph,
+                  Heading,
+                  Link,
+                  List,
+                  BlockQuote,
+                ],
+                toolbar: [
+                  "heading",
+                  "|",
+                  "bold",
+                  "italic",
+                  "link",
+                  "|",
+                  "bulletedList",
+                  "numberedList",
+                  "blockQuote",
+                  "|",
+                  "undo",
+                  "redo",
+                ],
+              }}
             />
           </div>
 
