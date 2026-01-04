@@ -1,7 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import {
+  ClassicEditor,
+  Bold,
+  Italic,
+  Essentials,
+  Paragraph,
+  Heading,
+  Link as CKeditorlink,
+  List,
+  BlockQuote,
+} from "ckeditor5";
+import "ckeditor5/ckeditor5.css";
 import { fetchSinglePost, updatePost } from "../api/posts";
 import { type Post } from "../types";
 
@@ -71,7 +82,7 @@ const Blog = ({ blog, onDelete, onEdit }: BlogProps): React.ReactElement => {
     }));
   };
 
-  const handleEditorChange = (editor: any) => {
+  const handleEditorChange = (_event: any, editor: any) => {
     const data = editor.getData();
     setFormData((prev) => ({ ...prev, content: data }));
 
@@ -169,9 +180,38 @@ const Blog = ({ blog, onDelete, onEdit }: BlogProps): React.ReactElement => {
                 Content:
               </label>
               <CKEditor
-                editor={ClassicEditor as any}
+                editor={ClassicEditor}
                 data={formData.content}
-                onChange={handleEditorChange}
+                onChange={(_event, editor) =>
+                  handleEditorChange(_event, editor)
+                }
+                config={{
+                  licenseKey: "GPL",
+                  plugins: [
+                    Essentials,
+                    Bold,
+                    Italic,
+                    Paragraph,
+                    Heading,
+                    CKeditorlink,
+                    List,
+                    BlockQuote,
+                  ],
+                  toolbar: [
+                    "heading",
+                    "|",
+                    "bold",
+                    "italic",
+                    "link",
+                    "|",
+                    "bulletedList",
+                    "numberedList",
+                    "blockQuote",
+                    "|",
+                    "undo",
+                    "redo",
+                  ],
+                }}
               />
               {errors.content && (
                 <p className="text-danger">{errors.content}</p>

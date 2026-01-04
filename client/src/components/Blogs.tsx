@@ -4,7 +4,18 @@ import PageHeader from "./PageHeader";
 import { fetchSinglePost, updatePost } from "../api/posts";
 import { useParams } from "react-router-dom";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import {
+  ClassicEditor,
+  Bold,
+  Italic,
+  Essentials,
+  Paragraph,
+  Heading,
+  Link as CKeditorlink,
+  List,
+  BlockQuote,
+} from "ckeditor5";
+import "ckeditor5/ckeditor5.css";
 import { type Post } from "../types";
 
 type BlogFormData = {
@@ -77,7 +88,7 @@ const Blogs = (): React.ReactElement => {
   };
 
   // Handle CKEditor changes
-  const handleEditorChange = (editor: any): void => {
+  const handleEditorChange = (_event: any, editor: any): void => {
     const data = editor.getData();
     setFormData({ ...formData, content: data });
     setErrors((prevErrors) => ({
@@ -170,9 +181,36 @@ const Blogs = (): React.ReactElement => {
                       Content:
                     </label>
                     <CKEditor
-                      editor={ClassicEditor as any}
+                      editor={ClassicEditor}
                       data={formData.content}
-                      onChange={handleEditorChange}
+                      onChange={(_event, editor) => handleEditorChange(_event,editor)}
+                      config={{
+                        licenseKey: "GPL",
+                        plugins: [
+                          Essentials,
+                          Bold,
+                          Italic,
+                          Paragraph,
+                          Heading,
+                          CKeditorlink,
+                          List,
+                          BlockQuote,
+                        ],
+                        toolbar: [
+                          "heading",
+                          "|",
+                          "bold",
+                          "italic",
+                          "link",
+                          "|",
+                          "bulletedList",
+                          "numberedList",
+                          "blockQuote",
+                          "|",
+                          "undo",
+                          "redo",
+                        ],
+                      }}
                     />
                     {errors.content && (
                       <p className="text-danger">{errors.content}</p>

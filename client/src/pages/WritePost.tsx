@@ -184,5 +184,4 @@ const WritePost = () => {
     </Layout>
   );
 };
-console.log("License Key:", import.meta.env.VITE_CKEDITOR_LICENSE_KEY);
 export default WritePost;
