@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Quick Testing Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .token-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .token-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .token-input button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .token-input button:hover {
+            background: #5568d3;
+        }
+
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 15px;
+        }
+
+        .api-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .api-card.auth {
+            border-top: 4px solid #f59e0b;
+        }
+
+        .api-card.post {
+            border-top: 4px solid #10b981;
+        }
+
+        .api-card.profile {
+            border-top: 4px solid #3b82f6;
+        }
+
+        .api-card h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            color: white;
+        }
+
+        .method.post {
+            background: #10b981;
+        }
+
+        .method.get {
+            background: #3b82f6;
+        }
+
+        .method.put {
+            background: #f59e0b;
+        }
+
+        .method.delete {
+            background: #ef4444;
+        }
+
+        .endpoint {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #666;
+            margin: 10px 0;
+            word-break: break-all;
+            background: #f3f4f6;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .input-group {
+            margin: 10px 0;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-test {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-test:hover {
+            background: #5568d3;
+        }
+
+        .btn-clear {
+            background: #e5e7eb;
+            color: #333;
+        }
+
+        .btn-clear:hover {
+            background: #d1d5db;
+        }
+
+        .response {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 4px;
+            border-left: 3px solid #667eea;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            color: #333;
+        }
+
+        .response.show {
+            display: block;
+        }
+
+        .response.success {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .response.error {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            margin: 20px 0 10px 0;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Blog API Quick Test</h1>
+            <div class="token-input">
+                <input type="password" id="token" placeholder="Paste your token here (copied from login/register response)">
+                <button onclick="saveToken()">Save Token</button>
+                <button onclick="clearToken()" style="background: #ef4444;">Clear</button>
+            </div>
+            <p id="tokenStatus" style="font-size: 12px; color: #666; margin-top: 5px;">Token not set</p>
+        </div>
+
+        <!-- Authentication -->
+        <div class="section-title">🔐 Authentication</div>
+        <div class="api-grid">
+            <div class="api-card auth">
+                <h3><span class="method post">POST</span>/api/auth/register</h3>
+                <div class="endpoint">http://localhost:5001/api/auth/register</div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" class="register-email" placeholder="user@example.com" value="test1@example.com">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" class="register-password" placeholder="password123" value="password123">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-test" onclick="testRegister()">Register</button>
+                    <button class="btn btn-clear" onclick="clearResponse(this)">Clear</button>
+                </div>
+                <div class="response"></div>
+            </div>
+
+            <div class="api-card auth">
+                <h3><span class="method post">POST</span>/api/auth/login</h3>
+                <div class="endpoint">http://localhost:5001/api/auth/login</div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" class="login-email" placeholder="user@example.com" value="test1@example.com">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" class="login-password" placeholder="password123" value="password123">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-test" onclick="testLogin()">Login</button>
+                    <button class="btn btn-clear" onclick="clearResponse(this)">Clear</button>
+                </div>
+                <div class="response"></div>
+            </div>
+        </div>
+
+        <!-- Posts -->
+        <div class="section-title">📝 Post Management</div>
+        <div class="api-grid">
+            <div class="api-card post">
+                <h3><span class="method post">POST</span>/api/posts</h3>
+                <div class="endpoint">http://localhost:5001/api/posts/</div>
+                <div class="input-group">
+                    <label>Title</label>
+                    <input type="text" class="post-title" placeholder="Article title" value="My First Blog Post">
+                </div>
+                <div class="input-group">
+                    <label>Subtitle</label>
+                    <input type="text" class="post-subtitle" placeholder="Subtitle" value="This is a subtitle">
+                </div>
+                <div class="input-group">
+                    <label>Content</label>
+                    <textarea class="post-content" placeholder="Article content">This is the full content of the article</textarea>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-test" onclick="testCreatePost()">Create</button>
+                    <button class="btn btn-clear" onclick="clearResponse(this)">Clear</button>
+                </div>
+                <div class="response"></div>
+            </div>
+
+            <div class="api-card post">
+                <h3><span class="method get">GET</span>/api/posts</h3>
+                <div class="endpoint">http://localhost:5001/api/posts/</div>
+                <p style="color: #666; font-size: 12px; margin: 10px 0;">Get all articles</p>
+                <div class="button-group">
+                    <button class="btn btn-test" onclick="testGetPosts()">Fetch</button>
+                    <button class="btn btn-clear" onclick="clearResponse(this)">Clear</button>
+                </div>
+                <div class="response"></div>
+            </div>
+
+            <div class="api-card post">
+                <h3><span class="method get">GET</span>/api/posts/:id</h3>
+                <div class="endpoint">http://localhost:5001/api/posts/:id</div>
+                <div class="input-group">
+                    <label>Post ID</label>
+                    <input type="text" class="post-id" placeholder="Paste post ID">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-test" onclick="testGetPost()">Fetch</button>
+                    <button class="btn btn-clear" onclick="clearResponse(this)">Clear</button>
+                </div>
+                <div class="response"></div>
+            </div>
+
+            <div class="api-card post">
+                <h3><span class="method put">PUT</span>/api/posts/:id</h3>
+                <div class="endpoint">http://localhost:5001/api/posts/:id</div>
+                <div class="input-group">
+                    <label>Post ID</label>
+                    <input type="text" class="update-post-id" placeholder="Paste post ID">
+                </div>
+                <div class="input-group">
+                    <label>Title</label>
+                    <input type="text" class="update-post-title" placeholder="Update title" value="Updated Title">
+                </div>
+                <div class="input-group">
+                    <label>Subtitle</label>
+                    <input type="text" class="update-post-subtitle" placeholder="Update subtitle" value="Updated Subtitle">
+                </div>
+                <div class="input-group">
+                    <label>Content</label>
+                    <textarea class="update-post-content" placeholder="Update content">Updated content</textarea>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-test" onclick="testUpdatePost()">Update</button>
+                    <button class="btn btn-clear" onclick="clearResponse(this)">Clear</button>
+                </div>
+                <div class="response"></div>
+            </div>
+
+            <div class="api-card post">
+                <h3><span class="method delete">DELETE</span>/api/posts/:id</h3>
+                <div class="endpoint">http://localhost:5001/api/posts/:id</div>
+                <div class="input-group">
+                    <label>Post ID</label>
+                    <input type="text" class="delete-post-id" placeholder="Paste post ID">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-test" onclick="testDeletePost()">Delete</button>
+                    <button class="btn btn-clear" onclick="clearResponse(this)">Clear</button>
+                </div>
+                <div class="response"></div>
+            </div>
+        </div>
+
+        <!-- User -->
+        <div class="section-title">👤 User Profile</div>
+        <div class="api-grid">
+            <div class="api-card profile">
+                <h3><span class="method get">GET</span>/api/profile</h3>
+                <div class="endpoint">http://localhost:5001/api/profile/</div>
+                <p style="color: #666; font-size: 12px; margin: 10px 0;">Get personal profile</p>
+                <div class="button-group">
+                    <button class="btn btn-test" onclick="testGetProfile()">Fetch</button>
+                    <button class="btn btn-clear" onclick="clearResponse(this)">Clear</button>
+                </div>
+                <div class="response"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:5001';
+
+        // Token 管理
+        function saveToken() {
+            const token = document.getElementById('token').value.trim();
+            if (!token) {
+                alert('Please enter token');
+                return;
+            }
+            localStorage.setItem('apiToken', token);
+            updateTokenStatus();
+        }
+
+        function clearToken() {
+            localStorage.removeItem('apiToken');
+            document.getElementById('token').value = '';
+            updateTokenStatus();
+        }
+
+        function getToken() {
+            return localStorage.getItem('apiToken');
+        }
+
+        function updateTokenStatus() {
+            const token = getToken();
+            const status = document.getElementById('tokenStatus');
+            if (token) {
+                status.textContent = `✅ Token set (${token.substring(0, 20)}...)`;
+                status.style.color = '#10b981';
+            } else {
+                status.textContent = '❌ Token not set, some endpoints require token';
+                status.style.color = '#ef4444';
+            }
+        }
+
+        // 通用请求函数
+        async function makeRequest(method, endpoint, body = null, requiresAuth = true) {
+            const url = `${BASE_URL}${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            if (requiresAuth) {
+                const token = getToken();
+                if (!token) {
+                    return { error: '❌ Please set token first' };
+                }
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json().catch(() => ({}));
+                return {
+                    status: response.status,
+                    success: response.ok,
+                    data: data || {},
+                };
+            } catch (error) {
+                return {
+                    error: `❌ Network error: ${error.message}`,
+                };
+            }
+        }
+
+        // 显示响应
+        function showResponse(button, result) {
+            const card = button.closest('.api-card');
+            const responseEl = card.querySelector('.response');
+
+            if (result.error) {
+                responseEl.classList.add('error');
+                responseEl.classList.remove('success');
+                responseEl.textContent = result.error;
+            } else {
+                responseEl.classList.add('success');
+                responseEl.classList.remove('error');
+                responseEl.textContent = JSON.stringify(result, null, 2);
+            }
+            responseEl.classList.add('show');
+        }
+
+        function clearResponse(button) {
+            const card = button.closest('.api-card');
+            const responseEl = card.querySelector('.response');
+            responseEl.classList.remove('show');
+            responseEl.textContent = '';
+        }
+
+        // 认证
+        async function testRegister() {
+            const button = event.target;
+            button.classList.add('loading');
+
+            const email = button.closest('.api-card').querySelector('.register-email').value;
+            const password = button.closest('.api-card').querySelector('.register-password').value;
+
+            if (!email || !password) {
+                alert('Please enter email and password');
+                button.classList.remove('loading');
+                return;
+            }
+
+            const result = await makeRequest('POST', '/api/auth/register', { email, password }, false);
+            if (result.success && result.data.token) {
+                document.getElementById('token').value = result.data.token;
+                saveToken();
+                alert('✅ Registration successful, token saved automatically');
+            }
+            showResponse(button, result);
+            button.classList.remove('loading');
+        }
+
+        async function testLogin() {
+            const button = event.target;
+            button.classList.add('loading');
+
+            const email = button.closest('.api-card').querySelector('.login-email').value;
+            const password = button.closest('.api-card').querySelector('.login-password').value;
+
+            if (!email || !password) {
+                alert('Please enter email and password');
+                button.classList.remove('loading');
+                return;
+            }
+
+            const result = await makeRequest('POST', '/api/auth/login', { email, password }, false);
+            if (result.success && result.data.token) {
+                document.getElementById('token').value = result.data.token;
+                saveToken();
+                alert('✅ Login successful, token saved automatically');
+            }
+            showResponse(button, result);
+            button.classList.remove('loading');
+        }
+
+        // 文章
+        async function testCreatePost() {
+            const button = event.target;
+            button.classList.add('loading');
+
+            const card = button.closest('.api-card');
+            const title = card.querySelector('.post-title').value;
+            const subtitle = card.querySelector('.post-subtitle').value;
+            const content = card.querySelector('.post-content').value;
+
+            if (!title || !subtitle || !content) {
+                alert('Please fill in all fields');
+                button.classList.remove('loading');
+                return;
+            }
+
+            const result = await makeRequest('POST', '/api/posts/', { title, subtitle, content });
+            showResponse(button, result);
+            button.classList.remove('loading');
+        }
+
+        async function testGetPosts() {
+            const button = event.target;
+            button.classList.add('loading');
+
+            const result = await makeRequest('GET', '/api/posts/');
+            showResponse(button, result);
+            button.classList.remove('loading');
+        }
+
+        async function testGetPost() {
+            const button = event.target;
+            button.classList.add('loading');
+
+            const card = button.closest('.api-card');
+            const id = card.querySelector('.post-id').value;
+
+            if (!id) {
+                alert('Please enter post ID');
+                button.classList.remove('loading');
+                return;
+            }
+
+            const result = await makeRequest('GET', `/api/posts/${id}`);
+            showResponse(button, result);
+            button.classList.remove('loading');
+        }
+
+        async function testUpdatePost() {
+            const button = event.target;
+            button.classList.add('loading');
+
+            const card = button.closest('.api-card');
+            const id = card.querySelector('.update-post-id').value;
+            const title = card.querySelector('.update-post-title').value;
+            const subtitle = card.querySelector('.update-post-subtitle').value;
+            const content = card.querySelector('.update-post-content').value;
+
+            if (!id || !title || !subtitle || !content) {
+                alert('Please fill in all fields');
+                button.classList.remove('loading');
+                return;
+            }
+
+            const result = await makeRequest('PUT', `/api/posts/${id}`, { title, subtitle, content });
+            showResponse(button, result);
+            button.classList.remove('loading');
+        }
+
+        async function testDeletePost() {
+            const button = event.target;
+            button.classList.add('loading');
+
+            const card = button.closest('.api-card');
+            const id = card.querySelector('.delete-post-id').value;
+
+            if (!id) {
+                alert('Please enter post ID');
+                button.classList.remove('loading');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete?')) {
+                button.classList.remove('loading');
+                return;
+            }
+
+            const result = await makeRequest('DELETE', `/api/posts/${id}`);
+            showResponse(button, result);
+            button.classList.remove('loading');
+        }
+
+        // 用户
+        async function testGetProfile() {
+            const button = event.target;
+            button.classList.add('loading');
+
+            const result = await makeRequest('GET', '/api/profile/');
+            showResponse(button, result);
+            button.classList.remove('loading');
+        }
+
+        // 初始化
+        updateTokenStatus();
+    </script>
+</body>
+
+</html>

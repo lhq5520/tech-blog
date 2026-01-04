@@ -1,18 +1,20 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-const router = express.Router();
+import express, { Request, Response } from 'express'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import { User } from '../models/User'
+import { Types } from 'mongoose'
+
+const router = express.Router()
 
 // Helper function to generate JWT
-const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
+const generateToken = (userId: Types.ObjectId):string => {
+  return jwt.sign({ id: userId.toString() }, process.env.JWT_SECRET!, 
+    { expiresIn: '2d' }
+  );
 };
 
 // Register route
-router.post("/register", async (req, res) => {
+router.post("/register", async (req: Request, res:Response):Promise<void> => {
   const { email, password } = req.body;
 
   try {
@@ -20,13 +22,14 @@ router.post("/register", async (req, res) => {
     const user = await User.create({ email, password: hashedPassword });
     const token = generateToken(user._id);
     res.status(201).json({ token, user: { id: user._id, email: user.email } });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+  } catch (error:any) {
+    res.status(400).json({ error: error.message});
   }
 });
 
+
 // Login route
-router.post("/login", async (req, res) => {
+router.post("/login", async (req:Request, res:Response): Promise<void> => {
   const { email, password } = req.body;
 
   try {
@@ -39,9 +42,9 @@ router.post("/login", async (req, res) => {
     const token = generateToken(user._id);
 
     res.status(200).json({ token, user: { id: user._id, email: user.email } });
-  } catch (error) {
+  } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
 });
 
-module.exports = router;
+export default router;

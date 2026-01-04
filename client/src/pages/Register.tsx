@@ -10,7 +10,7 @@ const Register = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const url = `${import.meta.env.VITE_API_URL}/api/auth/login`;
+    const url = `${import.meta.env.VITE_API_URL}/api/auth/register`;
     try {
       const response = await fetch(url, {
         method: "POST",
@@ -20,7 +20,7 @@ const Register = () => {
         body: JSON.stringify({ email, password }),
       });
       if (!response.ok) {
-        throw new Error("Login failed");
+        throw new Error("Registration failed");
       }
       alert("Registration successful. Please log in.");
       window.location.assign("/");

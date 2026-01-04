@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -35,11 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 4.2 write login function
   const login = (userData: User): void => {
     setUser(userData);
-    localStorage.setItem("token", JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(userData));
   };
   // 4.3 write logout function
   const logout = () => {
     setUser(null);
+    localStorage.removeItem("user");
     localStorage.removeItem("token");
   };
 

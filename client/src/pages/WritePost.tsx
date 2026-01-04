@@ -7,6 +7,8 @@ import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { useAuth } from "../context/AuthContext";
 
+const licenseKey = import.meta.env.VITE_CKEDITOR_LICENSE_KEY;
+
 const WritePost = () => {
   const [formData, setFormData] = useState({
     title: "",
@@ -18,6 +20,7 @@ const WritePost = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("License Key:", import.meta.env.VITE_CKEDITOR_LICENSE_KEY);
     if (!authLoading && !user) {
       navigate("/login");
     }
@@ -28,7 +31,7 @@ const WritePost = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleEditorChange = (editor: any) => {
+  const handleEditorChange = (_event: any, editor: any) => {
     const data = editor.getData();
     setFormData({ ...formData, content: data });
   };
@@ -129,6 +132,9 @@ const WritePost = () => {
               Content:
             </label>
             <CKEditor
+              config={{
+                licenseKey: licenseKey, // license key from cke
+              }}
               editor={ClassicEditor as any}
               data={formData.content}
               onChange={handleEditorChange}
@@ -145,5 +151,5 @@ const WritePost = () => {
     </Layout>
   );
 };
-
+console.log("License Key:", import.meta.env.VITE_CKEDITOR_LICENSE_KEY);
 export default WritePost;

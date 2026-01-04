@@ -1,14 +1,17 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const bodyParser = require("body-parser");
+import 'dotenv/config'
+import express from 'express'
+import mongoose from 'mongoose'
+import cors from 'cors'
+
+import postRoutes from './routes/postRoutes'
+import authRoutes from './routes/authRoutes'
+import userRoutes from './routes/userRoutes'
 
 const app = express();
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 // MongoDB Atlas Connection
 const MONGO_URI = process.env.MONGO_URI;
@@ -25,15 +28,8 @@ mongoose
   .then(() => console.log("MongoDB Atlas connected successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Routes
-const postRoutes = require("./routes/postRoutes"); 
-const authRoutes = require("./routes/authRoutes"); // New authentication routes
-const guessbook = require("./routes/guessBookRoutes"); // Guest Book routes
-const userRoutes = require("./routes/userRoutes"); // User Profile routes
-
 app.use("/api/posts", postRoutes);
-app.use("/api/auth", authRoutes); // Mount auth routes
-app.use("/api/guestbook", guessbook); 
+app.use("/api/auth", authRoutes);
 app.use("/api/profile", userRoutes); 
 
 // Start Server
