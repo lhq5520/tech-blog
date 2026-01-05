@@ -70,8 +70,8 @@ const WritePost = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async (): Promise<void> => {
+    await logout();
     navigate("/login");
   };
 

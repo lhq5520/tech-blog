@@ -6,13 +6,14 @@ import {
   type ReactNode,
 } from "react";
 import { type User } from "../types"; // 1. interface for user type
+import * as auth from "../api/auth";
 
 // 2. interface for AuthContext - what you need providing for other page
 interface AuthContextType {
   user: User | null;
   authLoading: boolean;
-  login: (user: User) => void;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 // 3. create context
@@ -25,23 +26,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setAuthLoading(false);
+    const check = async () => {
+      try {
+        const { user } = await auth.checkAuth();
+        setUser(user);
+      } catch {
+        // not login or token expire
+        setUser(null);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    check();
   }, []);
 
   // 4.2 write login function
-  const login = (userData: User): void => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+  const login = async (email: string, password: string): Promise<void> => {
+    const { user } = await auth.login(email, password);
+    if (user) {
+      setUser(user);
+    } else {
+      throw new Error("login failed");
+    }
   };
   // 4.3 write logout function
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+  const logout = async (): Promise<void> => {
+    try {
+      await auth.logout();
+      setUser(null);
+    } catch (error) {
+      throw new Error(`something went wrong with logout: ${error}`);
+    }
   };
 
   // 4.4 return Provider, pass value

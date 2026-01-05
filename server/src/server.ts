@@ -1,7 +1,9 @@
-import 'dotenv/config'
+import { config } from 'dotenv'
+config({ path: '.env.local' })
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
+import cookieParser from 'cookie-parser';
 
 import postRoutes from './routes/postRoutes'
 import authRoutes from './routes/authRoutes'
@@ -9,8 +11,14 @@ import userRoutes from './routes/userRoutes'
 
 const app = express();
 
+//cookie-parser
+app.use(cookieParser());
+
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL,  // frontend 
+  credentials: true,
+}));
 app.use(express.json());
 
 // MongoDB Atlas Connection

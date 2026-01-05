@@ -7,7 +7,7 @@
 
   const verifyToken = (request: Request, response:Response, next: NextFunction): void => {
     // 1.get the token
-    const token = request.headers.authorization?.split(" ")[1];
+    const token = request.cookies.token;
     // 2. if not token, throw error
     if (!token){
       response.status(401).json("Access Denied. No Token Provided");

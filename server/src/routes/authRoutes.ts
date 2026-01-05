@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { User } from '../models/User'
 import { Types } from 'mongoose'
+import verifyToken from '../middleware/authMiddleware'
 
 const router = express.Router()
 
@@ -21,7 +22,15 @@ router.post("/register", async (req: Request, res:Response):Promise<void> => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ email, password: hashedPassword });
     const token = generateToken(user._id);
-    res.status(201).json({ token, user: { id: user._id, email: user.email } });
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 2 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({ user: { id: user._id, email: user.email } });
   } catch (error:any) {
     res.status(400).json({ error: error.message});
   }
@@ -41,10 +50,34 @@ router.post("/login", async (req:Request, res:Response): Promise<void> => {
 
     const token = generateToken(user._id);
 
-    res.status(200).json({ token, user: { id: user._id, email: user.email } });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 2 * 24 * 60 * 60 * 1000,  // 2days
+    });
+
+    res.status(200).json({ user: { id: user._id, email: user.email } });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
+});
+
+//log out
+router.post("/logout", (_req:Request, res:Response) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+  
+  res.json({ message: 'ok' });
+});
+
+
+//auth status check
+router.get("/check", verifyToken, async (req:Request, res:Response): Promise<void> => {
+  res.json({ user: req.user });
 });
 
 export default router;

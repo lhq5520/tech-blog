@@ -3,7 +3,7 @@ import PageHeader from "../components/PageHeader";
 import Footer from "../components/Footer";
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
@@ -11,40 +11,17 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const url = `${import.meta.env.VITE_API_URL}/api/auth/login`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Login failed");
-      }
-
-      const data = await response.json();
-      const { user, token } = data; // Destructure the response
-
-      if (!user || !token) {
-        throw new Error("Malformed response from server.");
-      }
-
-      // Store the token in localStorage (or sessionStorage)
-      localStorage.setItem("token", token);
-
       // Call the context login function with user data
-      login(user);
-
+      await login(email, password);
       // Clear any previous errors
       setError("");
-      window.location.assign("/");
+      navigate("/");
     } catch (error) {
       console.error("Login error:", error); // Log for debugging
       setError("Invalid credentials."); // Show error message to the user

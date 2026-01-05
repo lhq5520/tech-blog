@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { register } from "../api/auth";
 import PageHeader from "../components/PageHeader";
 import Layout from "../components/Layout";
 import Footer from "../components/Footer";
@@ -7,23 +9,13 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const url = `${import.meta.env.VITE_API_URL}/api/auth/register`;
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!response.ok) {
-        throw new Error("Registration failed");
-      }
-      alert("Registration successful. Please log in.");
-      window.location.assign("/");
+      await register(email, password);
+      navigate("/login");
     } catch (err) {
       setError("Error registering user.");
     }
