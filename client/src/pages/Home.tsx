@@ -1,10 +1,7 @@
-import Layout from "../components/Layout";
-import PageHeader from "../components/PageHeader";
-import Footer from "../components/Footer";
+import PageLayout from "../components/PageLayout";
 import BlogCard from "../components/BlogCard";
 import { fetchPosts, deletePost } from "../api/posts";
 import { useAuth } from "../context/AuthContext";
-import { useLogout } from "../hooks/useLogout";
 import { useFetch } from "../hooks/useFetch";
 import { type Post } from "../types";
 import { Link } from "react-router-dom";
@@ -16,7 +13,6 @@ const Home = () => {
     loading,
   } = useFetch<Post[]>(fetchPosts);
   const { user } = useAuth();
-  const handleLogout = useLogout();
 
   const handleEdit = (updatedBlog: Post) => {
     setBlogs((prev) =>
@@ -38,28 +34,19 @@ const Home = () => {
   };
 
   return (
-    <Layout>
-      <PageHeader
-        title="Bytes Odyssey"
-        subtitle={
-          user ? (
-            <Link to="/profile" className="text-white">
-              Click Here To View Profile
-            </Link>
-          ) : (
-            "Welcome to my blog"
-          )
-        }
-        backgroundImage="/static/img/vechicle.jpg"
-      />
-      <div className="d-flex justify-content-end mb-3">
-        {user && (
-          <button onClick={handleLogout} className="btn btn-outline-secondary">
-            Log Out
-          </button>
-        )}
-      </div>
-
+    <PageLayout
+      title="Bytes Odyssey"
+      subtitle={
+        user ? (
+          <Link to="/profile" className="text-white">
+            Click Here To View Profile
+          </Link>
+        ) : (
+          "Welcome to my blog"
+        )
+      }
+      backgroundImage="/static/img/vechicle.jpg"
+    >
       <section className="container mt-4 mb-5">
         {loading ? (
           <p>Loading blogs...</p>
@@ -76,9 +63,7 @@ const Home = () => {
           ))
         )}
       </section>
-
-      <Footer />
-    </Layout>
+    </PageLayout>
   );
 };
 

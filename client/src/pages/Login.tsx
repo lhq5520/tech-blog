@@ -1,7 +1,4 @@
-import Layout from "../components/Layout";
-import PageHeader from "../components/PageHeader";
-import Footer from "../components/Footer";
-
+import PageLayout from "../components/PageLayout";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -29,18 +26,16 @@ const Login = () => {
   };
 
   return (
-    <Layout>
-      <PageHeader
-        title="Log In"
-        subtitle={
-          <Link to="/guessbook" className="text-white">
-            {" "}
-            Wanna Go Back To Guess Book? Click Here
-          </Link>
-        }
-        backgroundImage="/static/img/bently.jpeg"
-      />
-
+    <PageLayout
+      title="Log In"
+      subtitle={
+        <Link to="/guessbook" className="text-white">
+          {" "}
+          Wanna Go Back To Guess Book? Click Here
+        </Link>
+      }
+      backgroundImage="/static/img/bently.jpeg"
+    >
       <section className="container mt-5 mb-5">
         <div className="row justify-content-center">
           <div className="col-12 col-md-10 col-lg-6">
@@ -113,9 +108,7 @@ const Login = () => {
           </div>
         </div>
       </section>
-
-      <Footer />
-    </Layout>
+    </PageLayout>
   );
 };
 

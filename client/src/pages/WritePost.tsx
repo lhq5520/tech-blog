@@ -1,10 +1,8 @@
 import { useState } from "react";
-import Layout from "../components/Layout";
-import PageHeader from "../components/PageHeader";
+import PageLayout from "../components/PageLayout";
 import { createPost } from "../api/posts";
 import RichTextEditor from "../components/RichTextEditor";
 import { useRequireAuth } from "../hooks/useRequireAuth";
-import { useLogout } from "../hooks/useLogout";
 
 const WritePost = () => {
   const [formData, setFormData] = useState({
@@ -13,7 +11,6 @@ const WritePost = () => {
     content: "",
   });
   const [error, setError] = useState("");
-  const handleLogout = useLogout();
   const { authLoading } = useRequireAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,20 +48,12 @@ const WritePost = () => {
   }
 
   return (
-    <Layout>
-      <PageHeader
-        title="Creation Time"
-        subtitle="Let the flow of the words sliding through your vein"
-        backgroundImage="/static/img/write.jpeg"
-      />
-
+    <PageLayout
+      title="Creation Time"
+      subtitle="Let the flow of the words sliding through your vein"
+      backgroundImage="/static/img/write.jpeg"
+    >
       <div className="container mt-5 mb-5" style={{ maxWidth: "900px" }}>
-        <div className="d-flex justify-content-end mb-3">
-          <button onClick={handleLogout} className="btn btn-outline-secondary">
-            Log Out
-          </button>
-        </div>
-
         <form
           onSubmit={handleSubmit}
           className="bg-light p-5 rounded shadow-lg"
@@ -124,7 +113,7 @@ const WritePost = () => {
           </div>
         </form>
       </div>
-    </Layout>
+    </PageLayout>
   );
 };
 export default WritePost;

@@ -1,17 +1,12 @@
-import Layout from "../components/Layout";
-import Footer from "../components/Footer"; //reusable Footer
-import PageHeader from "../components/PageHeader";
+import PageLayout from "../components/PageLayout";
 
 const About = () => {
   return (
-    <Layout>
-      {/* Header Section */}
-      <PageHeader
-        title="About Byte Odyssey"
-        subtitle="Every Huge Leap Starts with a Small Step"
-        backgroundImage="/static/img/computer.jpg"
-      />
-
+    <PageLayout
+      title="About Byte Odyssey"
+      subtitle="Every Huge Leap Starts with a Small Step"
+      backgroundImage="/static/img/computer.jpg"
+    >
       {/* Main Content */}
       <main className="mb-4">
         <div className="container px-4 px-lg-5 mb-5">
@@ -53,10 +48,7 @@ const About = () => {
           </div>
         </div>
       </main>
-
-      {/* Footer Section */}
-      <Footer />
-    </Layout>
+    </PageLayout>
   );
 };
 

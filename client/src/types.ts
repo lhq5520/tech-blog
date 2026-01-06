@@ -12,3 +12,9 @@ export interface User {
   email: string;
   createdAt: string;
 }
+
+export type BlogFormData = {
+  title: string;
+  subtitle: string;
+  content: string;
+};

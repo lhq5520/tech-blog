@@ -1,21 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import RichTextEditor from "./RichTextEditor";
 import { fetchSinglePost, updatePost } from "../api/posts";
 import { type Post } from "../types";
 import { useAuth } from "../context/AuthContext";
+import BlogEditForm from "./BlogEditForm";
+import { useBlogForm } from "../hooks/useBlogForm";
 
 interface BlogProps {
   blog: Post;
   onDelete: (id: string) => void;
   onEdit: (updatedblog: Post) => void;
 }
-
-type BlogFormData = {
-  title: string;
-  subtitle: string;
-  content: string;
-};
 
 const BlogCard = ({
   blog,
@@ -24,13 +19,21 @@ const BlogCard = ({
 }: BlogProps): React.ReactElement => {
   const { user } = useAuth();
 
-  const [editMode, setEditMode] = useState<boolean>(false);
-  const [formData, setFormData] = useState<BlogFormData>({
+  const {
+    formData,
+    setFormData,
+    errors,
+    setErrors,
+    handleChange,
+    validateForm,
+  } = useBlogForm({
     title: blog.title,
     subtitle: blog.subtitle,
-    content: "", // Initially empty, fetch when entering edit mode
+    content: "",
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [editMode, setEditMode] = useState<boolean>(false);
+
   const [loadingContent, setLoadingContent] = useState<boolean>(false);
 
   // Fetch the full blog content when entering edit mode
@@ -49,32 +52,6 @@ const BlogCard = ({
     } finally {
       setLoadingContent(false);
     }
-  };
-
-  const validateForm = (): Record<string, string> => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.title.trim()) {
-      newErrors.title = "Title is required.";
-    }
-    if (!formData.subtitle.trim()) {
-      newErrors.subtitle = "Subtitle is required.";
-    }
-    if (!formData.content?.trim()) {
-      newErrors.content = "Content is required.";
-    }
-    return newErrors;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-
-    // Clear errors as user types
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: value.trim() ? "" : prevErrors[name],
-    }));
   };
 
   const handleSave = async () => {
@@ -123,73 +100,14 @@ const BlogCard = ({
         loadingContent ? (
           <p>Loading content...</p>
         ) : (
-          <form>
-            {/* Title Field */}
-            <div className="mb-3">
-              <label htmlFor="title" className="form-label">
-                Title:
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="form-control"
-              />
-              {errors.title && <p className="text-danger">{errors.title}</p>}
-            </div>
-
-            {/* Subtitle Field */}
-            <div className="mb-3">
-              <label htmlFor="subtitle" className="form-label">
-                Subtitle:
-              </label>
-              <input
-                type="text"
-                id="subtitle"
-                name="subtitle"
-                value={formData.subtitle}
-                onChange={handleChange}
-                className="form-control"
-              />
-              {errors.subtitle && (
-                <p className="text-danger">{errors.subtitle}</p>
-              )}
-            </div>
-
-            {/* Content Field */}
-            <div className="mb-3">
-              <label htmlFor="content" className="form-label">
-                Content:
-              </label>
-              <RichTextEditor
-                value={formData.content}
-                onChange={(content) => setFormData({ ...formData, content })}
-              />
-              {errors.content && (
-                <p className="text-danger">{errors.content}</p>
-              )}
-            </div>
-
-            {/* Save and Cancel Buttons */}
-            <div className="d-flex gap-2">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleSave}
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={handleCancel}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+          <BlogEditForm
+            formData={formData}
+            errors={errors}
+            onChange={handleChange}
+            onContentChange={(content) => setFormData({ ...formData, content })}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
         )
       ) : (
         <>

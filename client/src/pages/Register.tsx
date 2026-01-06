@@ -1,3 +1,28 @@
+import PageLayout from "../components/PageLayout";
+
+const Register = () => {
+  return (
+    <PageLayout
+      title="Registration Closed"
+      subtitle="Oops!"
+      backgroundImage="/static/img/home-bg.jpg"
+    >
+      <div className="container mt-5 mb-5 text-center">
+        <h2>Sorry!</h2>
+        <p className="lead">
+          This page doesn't seem to be open to the public at this time.
+        </p>
+        <a href="/" className="btn btn-primary mt-3">
+          Back to Home
+        </a>
+      </div>
+    </PageLayout>
+  );
+};
+
+export default Register;
+
+/*
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../api/auth";
@@ -79,3 +104,4 @@ const Register = () => {
 };
 
 export default Register;
+*/

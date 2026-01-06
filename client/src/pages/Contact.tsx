@@ -1,7 +1,5 @@
 import { useState } from "react";
-import Layout from "../components/Layout";
-import Footer from "../components/Footer"; // Import the reusable Footer component
-import PageHeader from "../components/PageHeader";
+import PageLayout from "../components/PageLayout";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -39,14 +37,11 @@ const Contact = () => {
   };
 
   return (
-    <Layout>
-      {/* Page Header */}
-      <PageHeader
-        title="Contact Us"
-        subtitle="Have questions? I have answers."
-        backgroundImage="/static/img/contact-bg.jpg"
-      />
-
+    <PageLayout
+      title="Contact Us"
+      subtitle="Have questions? I have answers."
+      backgroundImage="/static/img/contact-bg.jpg"
+    >
       {/* Main Content */}
       <main className="mb-4">
         <div className="container px-4 px-lg-5 mb-5">
@@ -141,10 +136,7 @@ const Contact = () => {
           </div>
         </div>
       </main>
-
-      {/* Footer Section */}
-      <Footer />
-    </Layout>
+    </PageLayout>
   );
 };
 

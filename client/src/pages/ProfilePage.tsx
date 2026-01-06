@@ -1,7 +1,6 @@
 import { fetchUserProfile } from "../api/user";
 import { type User } from "../types";
-import Layout from "../components/Layout";
-import PageHeader from "../components/PageHeader";
+import PageLayout from "../components/PageLayout";
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import { useFetch } from "../hooks/useFetch";
 
@@ -13,12 +12,11 @@ const ProfilePage = () => {
   if (error) return <p className="text-danger">{error}</p>;
 
   return (
-    <Layout>
-      <PageHeader
-        title="Your Profile"
-        subtitle="View your account details below."
-        backgroundImage="/static/img/home-bg.jpg"
-      />
+    <PageLayout
+      title="Your Profile"
+      subtitle="View your account details below."
+      backgroundImage="/static/img/home-bg.jpg"
+    >
       <div className="container mt-4 mb-5 text-center">
         {user && (
           <div className="profile">
@@ -33,7 +31,7 @@ const ProfilePage = () => {
           </div>
         )}
       </div>
-    </Layout>
+    </PageLayout>
   );
 };
 
