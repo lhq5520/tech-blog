@@ -1,31 +1,15 @@
-import { useState, useEffect } from "react";
 import { fetchUserProfile } from "../api/user";
 import { type User } from "../types";
 import Layout from "../components/Layout";
 import PageHeader from "../components/PageHeader";
+import { useRequireAuth } from "../hooks/useRequireAuth";
+import { useFetch } from "../hooks/useFetch";
 
 const ProfilePage = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { authLoading } = useRequireAuth();
+  const { data: user, loading, error } = useFetch<User>(fetchUserProfile);
 
-  useEffect(() => {
-    const loadCurrentUser = async () => {
-      try {
-        const data = await fetchUserProfile(); // Fetch current user
-        setUser(data); // Set user data
-      } catch (error) {
-        console.error("Error fetching current user:", error);
-        setError("Failed to load user profile. Please log in again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCurrentUser();
-  }, []);
-
-  if (loading) return <p>Loading...</p>;
+  if (authLoading || loading) return <p>Loading...</p>;
   if (error) return <p className="text-danger">{error}</p>;
 
   return (

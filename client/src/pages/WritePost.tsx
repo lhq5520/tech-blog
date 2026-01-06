@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState} from "react";
 import Layout from "../components/Layout";
 import PageHeader from "../components/PageHeader";
 import { createPost } from "../api/posts";
@@ -16,7 +15,8 @@ import {
   BlockQuote,
 } from "ckeditor5";
 import "ckeditor5/ckeditor5.css";
-import { useAuth } from "../context/AuthContext";
+import { useRequireAuth } from "../hooks/useRequireAuth";
+import { useLogout } from "../hooks/useLogout";
 
 const WritePost = () => {
   const [formData, setFormData] = useState({
@@ -25,15 +25,8 @@ const WritePost = () => {
     content: "",
   });
   const [error, setError] = useState("");
-  const { user, logout, authLoading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log("License Key:", import.meta.env.VITE_CKEDITOR_LICENSE_KEY);
-    if (!authLoading && !user) {
-      navigate("/login");
-    }
-  }, [user, authLoading, navigate]);
+  const handleLogout = useLogout();
+  const { authLoading } = useRequireAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -68,11 +61,6 @@ const WritePost = () => {
       console.error("Error creating post:", error);
       alert("Failed to create post.");
     }
-  };
-
-  const handleLogout = async (): Promise<void> => {
-    await logout();
-    navigate("/login");
   };
 
   if (authLoading) {

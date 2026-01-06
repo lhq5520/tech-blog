@@ -15,6 +15,7 @@ import {
 import "ckeditor5/ckeditor5.css";
 import { fetchSinglePost, updatePost } from "../api/posts";
 import { type Post } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 interface BlogProps {
   blog: Post;
@@ -28,7 +29,13 @@ type BlogFormData = {
   content: string;
 };
 
-const Blog = ({ blog, onDelete, onEdit }: BlogProps): React.ReactElement => {
+const BlogCard = ({
+  blog,
+  onDelete,
+  onEdit,
+}: BlogProps): React.ReactElement => {
+  const { user } = useAuth();
+
   const [editMode, setEditMode] = useState<boolean>(false);
   const [formData, setFormData] = useState<BlogFormData>({
     title: blog.title,
@@ -241,7 +248,7 @@ const Blog = ({ blog, onDelete, onEdit }: BlogProps): React.ReactElement => {
         <>
           {/* Blog Display */}
           <h3>
-            <Link to={`/blogs/${blog._id}`}>{blog.title}</Link>
+            <Link to={`/blogDetail/${blog._id}`}>{blog.title}</Link>
           </h3>
           <p className="text-muted">{blog.subtitle}</p>
           <p className="small text-muted">
@@ -250,18 +257,23 @@ const Blog = ({ blog, onDelete, onEdit }: BlogProps): React.ReactElement => {
           <div dangerouslySetInnerHTML={{ __html: blog.content }} />
 
           {/* Edit and Delete Buttons */}
-          <div className="d-flex gap-2 mt-3">
-            <button className="btn btn-primary btn-sm" onClick={enterEditMode}>
-              Edit
-            </button>
-            <button className="btn btn-danger btn-sm" onClick={handleDelete}>
-              Delete
-            </button>
-          </div>
+          {user && (
+            <div className="d-flex gap-2 mt-3">
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={enterEditMode}
+              >
+                Edit
+              </button>
+              <button className="btn btn-danger btn-sm" onClick={handleDelete}>
+                Delete
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
   );
 };
 
-export default Blog;
+export default BlogCard;

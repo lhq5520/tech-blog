@@ -15,6 +15,7 @@ const generateToken = (userId: Types.ObjectId):string => {
 };
 
 // Register route
+/*
 router.post("/register", async (req: Request, res:Response):Promise<void> => {
   const { email, password } = req.body;
 
@@ -35,7 +36,7 @@ router.post("/register", async (req: Request, res:Response):Promise<void> => {
     res.status(400).json({ error: error.message});
   }
 });
-
+*/
 
 // Login route
 router.post("/login", async (req:Request, res:Response): Promise<void> => {

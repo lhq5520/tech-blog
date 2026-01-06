@@ -17,6 +17,7 @@ import {
 } from "ckeditor5";
 import "ckeditor5/ckeditor5.css";
 import { type Post } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 type BlogFormData = {
   title: string;
@@ -24,7 +25,8 @@ type BlogFormData = {
   content: string;
 };
 
-const Blogs = (): React.ReactElement => {
+const BlogDetail = (): React.ReactElement => {
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>(); // Get the blog ID from the URL
   if (!id) {
     return <div>Invalid post ID</div>;
@@ -183,7 +185,9 @@ const Blogs = (): React.ReactElement => {
                     <CKEditor
                       editor={ClassicEditor}
                       data={formData.content}
-                      onChange={(_event, editor) => handleEditorChange(_event,editor)}
+                      onChange={(_event, editor) =>
+                        handleEditorChange(_event, editor)
+                      }
                       config={{
                         licenseKey: "GPL",
                         plugins: [
@@ -248,14 +252,17 @@ const Blogs = (): React.ReactElement => {
                   {new Date(blog.createdAt).toLocaleString()}
                 </p>
                 <div dangerouslySetInnerHTML={{ __html: blog.content }} />
-                <div className="text-end mt-4">
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => setEditMode(true)}
-                  >
-                    Edit Blog
-                  </button>
-                </div>
+
+                {user && (
+                  <div className="text-end mt-4">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => setEditMode(true)}
+                    >
+                      Edit Blog
+                    </button>
+                  </div>
+                )}
               </section>
             </>
           )}
@@ -267,4 +274,4 @@ const Blogs = (): React.ReactElement => {
   );
 };
 
-export default Blogs;
+export default BlogDetail;

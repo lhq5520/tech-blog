@@ -27,10 +27,10 @@ router.post("/", verifyToken, async (req:Request, res:Response): Promise<void> =
   }
 });
 
-// Get all posts for the logged-in user
-router.get("/", verifyToken, async (req:Request, res:Response): Promise<void> => {
+// Get all posts for everyone
+router.get("/", async (req:Request, res:Response): Promise<void> => {
   try {
-    const posts = await Post.find({ userId: req.user!.id }); // Fetch posts for the user
+    const posts = await Post.find().sort({ createdAt: -1 }); // Fetch posts for the user
     res.json(posts);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch posts" });
@@ -39,11 +39,11 @@ router.get("/", verifyToken, async (req:Request, res:Response): Promise<void> =>
 
 
 // Get a single blog post by its _id
-router.get("/:id", verifyToken, async (req:Request, res:Response): Promise<void> => {
+router.get("/:id", async (req:Request, res:Response): Promise<void> => {
   const { id } = req.params; // Extract blog ID from the route parameter
 
   try {
-    const post = await Post.findOne({ _id: id, userId: req.user!.id }); // Ensure the post belongs to the user
+    const post = await Post.findById(id);
     if (!post) {
       res.status(404).json({ error: "Post not found" });
       return;
