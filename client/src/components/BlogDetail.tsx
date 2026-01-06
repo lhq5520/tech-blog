@@ -3,19 +3,7 @@ import Layout from "./Layout";
 import PageHeader from "./PageHeader";
 import { fetchSinglePost, updatePost } from "../api/posts";
 import { useParams } from "react-router-dom";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import {
-  ClassicEditor,
-  Bold,
-  Italic,
-  Essentials,
-  Paragraph,
-  Heading,
-  Link as CKeditorlink,
-  List,
-  BlockQuote,
-} from "ckeditor5";
-import "ckeditor5/ckeditor5.css";
+import RichTextEditor from "./RichTextEditor";
 import { type Post } from "../types";
 import { useAuth } from "../context/AuthContext";
 
@@ -86,16 +74,6 @@ const BlogDetail = (): React.ReactElement => {
       [name]: value.trim()
         ? ""
         : `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`,
-    }));
-  };
-
-  // Handle CKEditor changes
-  const handleEditorChange = (_event: any, editor: any): void => {
-    const data = editor.getData();
-    setFormData({ ...formData, content: data });
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      content: data.trim() ? "" : "Content is required.",
     }));
   };
 
@@ -182,39 +160,11 @@ const BlogDetail = (): React.ReactElement => {
                     <label htmlFor="content" className="form-label">
                       Content:
                     </label>
-                    <CKEditor
-                      editor={ClassicEditor}
-                      data={formData.content}
-                      onChange={(_event, editor) =>
-                        handleEditorChange(_event, editor)
+                    <RichTextEditor
+                      value={formData.content}
+                      onChange={(content) =>
+                        setFormData({ ...formData, content })
                       }
-                      config={{
-                        licenseKey: "GPL",
-                        plugins: [
-                          Essentials,
-                          Bold,
-                          Italic,
-                          Paragraph,
-                          Heading,
-                          CKeditorlink,
-                          List,
-                          BlockQuote,
-                        ],
-                        toolbar: [
-                          "heading",
-                          "|",
-                          "bold",
-                          "italic",
-                          "link",
-                          "|",
-                          "bulletedList",
-                          "numberedList",
-                          "blockQuote",
-                          "|",
-                          "undo",
-                          "redo",
-                        ],
-                      }}
                     />
                     {errors.content && (
                       <p className="text-danger">{errors.content}</p>

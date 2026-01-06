@@ -1,20 +1,8 @@
-import { useState} from "react";
+import { useState } from "react";
 import Layout from "../components/Layout";
 import PageHeader from "../components/PageHeader";
 import { createPost } from "../api/posts";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import {
-  ClassicEditor,
-  Bold,
-  Italic,
-  Essentials,
-  Paragraph,
-  Heading,
-  Link,
-  List,
-  BlockQuote,
-} from "ckeditor5";
-import "ckeditor5/ckeditor5.css";
+import RichTextEditor from "../components/RichTextEditor";
 import { useRequireAuth } from "../hooks/useRequireAuth";
 import { useLogout } from "../hooks/useLogout";
 
@@ -31,11 +19,6 @@ const WritePost = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-  };
-
-  const handleEditorChange = (_event: any, editor: any) => {
-    const data = editor.getData();
-    setFormData({ ...formData, content: data });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,37 +111,9 @@ const WritePost = () => {
             <label htmlFor="content" className="form-label">
               Content:
             </label>
-            <CKEditor
-              editor={ClassicEditor}
-              data={formData.content}
-              onChange={handleEditorChange}
-              config={{
-                licenseKey: "GPL",
-                plugins: [
-                  Essentials,
-                  Bold,
-                  Italic,
-                  Paragraph,
-                  Heading,
-                  Link,
-                  List,
-                  BlockQuote,
-                ],
-                toolbar: [
-                  "heading",
-                  "|",
-                  "bold",
-                  "italic",
-                  "link",
-                  "|",
-                  "bulletedList",
-                  "numberedList",
-                  "blockQuote",
-                  "|",
-                  "undo",
-                  "redo",
-                ],
-              }}
+            <RichTextEditor
+              value={formData.content}
+              onChange={(content) => setFormData({ ...formData, content })}
             />
           </div>
 
