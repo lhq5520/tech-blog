@@ -27,8 +27,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../api/auth";
 import PageHeader from "../components/PageHeader";
-import Layout from "../components/Layout";
-import Footer from "../components/Footer";
 
 const Register = () => {
   const [email, setEmail] = useState("");
