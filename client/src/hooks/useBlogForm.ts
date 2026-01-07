@@ -19,7 +19,7 @@ export const useBlogForm = (initialData: BlogFormData = defaultFormData) => {
       ...prevErrors,
       [name]: value.trim()
         ? ""
-        : `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`,
+        : prevErrors[name],
     }));
   };
 

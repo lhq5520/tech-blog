@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { User } from '../models/User'
 import { Types } from 'mongoose'
 import verifyToken from '../middleware/authMiddleware'
+import passport from 'passport';
 
 const router = express.Router()
 
@@ -44,7 +45,7 @@ router.post("/login", async (req:Request, res:Response): Promise<void> => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user) throw new Error("Invalid email or password");
+    if (!user || !user.password) throw new Error("Invalid email or password");
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error("Invalid email or password");
@@ -80,5 +81,36 @@ router.post("/logout", (_req:Request, res:Response) => {
 router.get("/check", verifyToken, async (req:Request, res:Response): Promise<void> => {
   res.json({ user: req.user });
 });
+
+
+//redirect user to google Oauth page
+router.get("/google", passport.authenticate('google', {
+    scope: ['profile', 'email']
+}));
+
+
+// Google OAuth callback handler
+router.get('/google/callback',
+  passport.authenticate('google', { session: false, failureRedirect: `${process.env.FRONTEND_URL}/login?error=unauthorized` }),
+  (req: Request, res: Response) => {
+    // Get authenticated user from Passport
+    const user = req.user as any;
+    
+    // Generate JWT token
+    const token = generateToken(user._id);
+
+    // Set token cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 2 * 24 * 60 * 60 * 1000,
+    });
+
+    // Redirect to frontend
+    res.redirect(process.env.FRONTEND_URL!);
+  }
+);
+
 
 export default router;

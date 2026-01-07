@@ -9,6 +9,8 @@ import postRoutes from './routes/postRoutes'
 import authRoutes from './routes/authRoutes'
 import userRoutes from './routes/userRoutes'
 
+import passport from './config/passport'
+
 const app = express();
 
 //cookie-parser
@@ -20,6 +22,8 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+
+app.use(passport.initialize());
 
 // MongoDB Atlas Connection
 const MONGO_URI = process.env.MONGO_URI;
