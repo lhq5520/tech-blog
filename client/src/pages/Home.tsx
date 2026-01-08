@@ -42,7 +42,7 @@ const Home = () => {
             Click Here To View Profile
           </Link>
         ) : (
-          "Welcome to my blog"
+          "Welcome to Weifan's Blog"
         )
       }
       backgroundImage="/static/img/vechicle.jpg"

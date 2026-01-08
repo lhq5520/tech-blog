@@ -117,9 +117,19 @@ const BlogCard = ({
           </h3>
           <p className="text-muted">{blog.subtitle}</p>
           <p className="small text-muted">
-            Created on: {new Date(blog.createdAt).toLocaleString()}
+            Published:{" "}
+            {new Intl.DateTimeFormat("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+              timeZoneName: "short",
+            })
+              .format(new Date(blog.createdAt))
+              .replace(",", " ·")}
           </p>
-          <div dangerouslySetInnerHTML={{ __html: blog.content }} />
 
           {/* Edit and Delete Buttons */}
           {user && (
