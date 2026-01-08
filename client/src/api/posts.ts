@@ -9,10 +9,22 @@ interface BlogPublish {
   content: string;
 }
 
+export interface PostsResponse {
+  posts: Post[];
+  currentPage: number;
+  totalPages: number;
+  totalPosts: number;
+}
+
 // Get all posts
 export const fetchPosts = (): Promise<Post[]> => {
   return get<Post[]>(POSTS_ENDPOINT);
 }
+
+//Get all posts with pagination
+export const fetchPaginatedPosts = (page: number = 1, limit: number = 5) => {
+  return get<PostsResponse>(`${POSTS_ENDPOINT}/pagelimit?page=${page}&limit=${limit}`);
+};
 
 // Get a single post
 export const fetchSinglePost = (blogId:string): Promise<Post> => {

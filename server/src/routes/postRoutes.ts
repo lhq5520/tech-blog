@@ -37,6 +37,38 @@ router.get("/", async (req:Request, res:Response): Promise<void> => {
   }
 });
 
+// Get all posts for everyone
+router.get("/pagelimit", async (req:Request, res:Response): Promise<void> => {
+  try {
+    // 1. Get pagination parameters (default: page 1, 5 posts per page)
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 5;
+    
+    // 2. Calculate the number of posts to skip
+    const skip = (page - 1) * limit;
+
+    // 3. Parallel queries: fetch posts list + fetch total post count
+    const [posts, total] = await Promise.all([
+      Post.find()
+        .sort({ createdAt: -1 }) // Sort by creation date descending
+        .skip(skip)              // Skip previous posts
+        .limit(limit),           // Fetch only 'limit' posts
+      Post.countDocuments()      // Count total posts
+    ]);
+
+    // 4. Return object with pagination information
+    res.json({
+      posts,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalPosts: total
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch posts" });
+  }
+});
+
 
 // Get a single blog post by its _id
 router.get("/:id", async (req:Request, res:Response): Promise<void> => {
