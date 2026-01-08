@@ -38,7 +38,7 @@ const Contact = () => {
 
   return (
     <PageLayout
-      title="Contact Us"
+      title="Contact Me"
       subtitle="Have questions? I have answers."
       backgroundImage="/static/img/contact-bg.jpg"
     >
