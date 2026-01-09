@@ -44,6 +44,12 @@ app.use("/api/posts", postRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", userRoutes); 
 
+
+// Health check endpoint for Render
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Server is running" });
+});
+
 // Start Server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
