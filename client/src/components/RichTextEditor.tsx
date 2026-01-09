@@ -16,7 +16,8 @@ const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
       onChange={(_event, editor) => {
         onChange(editor.getData());
       }}
-      config={editorConfig}
+      // 断言为 any，避免与 CKEditor 内部复杂类型冲突
+      config={editorConfig as any}
     />
   );
 };
