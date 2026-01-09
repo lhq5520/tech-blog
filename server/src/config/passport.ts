@@ -16,7 +16,10 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       
       // OAuth callback URL
-      callbackURL: '/api/auth/google/callback' 
+      // Use absolute URL to avoid redirect_uri_mismatch caused by http protocol resolution in production
+      callbackURL: process.env.BACKEND_URL
+        ? `${process.env.BACKEND_URL}/api/auth/google/callback`
+        : 'https://api.blog.weifanx.com/api/auth/google/callback'
     },
     // Verify callback with Google profile
     async (accessToken, refreshToken, profile: Profile, done) => {
