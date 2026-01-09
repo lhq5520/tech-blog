@@ -21,9 +21,32 @@ export const fetchPosts = (): Promise<Post[]> => {
   return get<Post[]>(POSTS_ENDPOINT);
 }
 
-//Get all posts with pagination
-export const fetchPaginatedPosts = (page: number = 1, limit: number = 5) => {
-  return get<PostsResponse>(`${POSTS_ENDPOINT}/pagelimit?page=${page}&limit=${limit}`);
+//Get all posts with pagination, search, and filters
+export const fetchPaginatedPosts = (
+  page: number = 1, 
+  limit: number = 5,
+  search?: string,
+  sortBy?: string,
+  sortOrder?: string
+) => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
+  
+  if (search && search.trim()) {
+    params.append('search', search.trim());
+  }
+  
+  if (sortBy) {
+    params.append('sortBy', sortBy);
+  }
+  
+  if (sortOrder) {
+    params.append('sortOrder', sortOrder);
+  }
+  
+  return get<PostsResponse>(`${POSTS_ENDPOINT}/pagelimit?${params.toString()}`);
 };
 
 // Get a single post

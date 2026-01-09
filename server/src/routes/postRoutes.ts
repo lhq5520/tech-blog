@@ -27,36 +27,78 @@ router.post("/", verifyToken, async (req:Request, res:Response): Promise<void> =
   }
 });
 
-// Get all posts for everyone
+// Get all posts for everyone (with optional search)
 router.get("/", async (req:Request, res:Response): Promise<void> => {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 }); // Fetch posts for the user
+    const searchQuery = req.query.search as string | undefined;
+    
+    // Build query object
+    let query: any = {};
+    
+    // If search query exists, search in title, subtitle, and content
+    if (searchQuery && searchQuery.trim()) {
+      query = {
+        $or: [
+          { title: { $regex: searchQuery, $options: "i" } },
+          { subtitle: { $regex: searchQuery, $options: "i" } },
+          { content: { $regex: searchQuery, $options: "i" } },
+        ],
+      };
+    }
+    
+    const posts = await Post.find(query).sort({ createdAt: -1 });
     res.json(posts);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch posts" });
   }
 });
 
-// Get all posts for everyone
+// Get all posts for everyone (with pagination, search, and sorting)
 router.get("/pagelimit", async (req:Request, res:Response): Promise<void> => {
   try {
     // 1. Get pagination parameters (default: page 1, 5 posts per page)
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 5;
+    const searchQuery = req.query.search as string | undefined;
+    const sortBy = req.query.sortBy as string || "date"; // "date" or "title"
+    const sortOrder = req.query.sortOrder as string || "desc"; // "asc" or "desc"
     
     // 2. Calculate the number of posts to skip
     const skip = (page - 1) * limit;
 
-    // 3. Parallel queries: fetch posts list + fetch total post count
+    // 3. Build search query
+    let query: any = {};
+    if (searchQuery && searchQuery.trim()) {
+      query = {
+        $or: [
+          { title: { $regex: searchQuery, $options: "i" } },
+          { subtitle: { $regex: searchQuery, $options: "i" } },
+          { content: { $regex: searchQuery, $options: "i" } },
+        ],
+      };
+    }
+
+    // 4. Build sort object
+    let sortObject: any = {};
+    if (sortBy === "date") {
+      sortObject.createdAt = sortOrder === "asc" ? 1 : -1;
+    } else if (sortBy === "title") {
+      sortObject.title = sortOrder === "asc" ? 1 : -1;
+    } else {
+      // Default to date descending
+      sortObject.createdAt = -1;
+    }
+
+    // 5. Parallel queries: fetch posts list + fetch total post count
     const [posts, total] = await Promise.all([
-      Post.find()
-        .sort({ createdAt: -1 }) // Sort by creation date descending
+      Post.find(query)
+        .sort(sortObject)
         .skip(skip)              // Skip previous posts
         .limit(limit),           // Fetch only 'limit' posts
-      Post.countDocuments()      // Count total posts
+      Post.countDocuments(query) // Count total posts matching search
     ]);
 
-    // 4. Return object with pagination information
+    // 6. Return object with pagination information
     res.json({
       posts,
       currentPage: page,

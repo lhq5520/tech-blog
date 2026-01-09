@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import PageLayout from "../components/PageLayout";
 import BlogCard from "../components/BlogCard";
@@ -47,13 +47,24 @@ const Home = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [searchInput, setSearchInput] = useState(""); // User input for search text
+  const [searchQuery, setSearchQuery] = useState(""); // Actual search query used for API (debounced)
+  const [sortBy, setSortBy] = useState("date");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   const LIMIT = 5;
+  const debounceTimerRef = useRef<number | null>(null);
 
   const loadPosts = async (pageToFetch: number) => {
     setLoading(true);
     try {
-      const data: PostsResponse = await fetchPaginatedPosts(pageToFetch, LIMIT);
+      const data: PostsResponse = await fetchPaginatedPosts(
+        pageToFetch, 
+        LIMIT,
+        searchQuery || undefined,
+        sortBy,
+        sortOrder
+      );
       setPosts(data.posts || []);
       setTotalPages(data.totalPages);
       if (data.currentPage) setPage(data.currentPage);
@@ -65,9 +76,36 @@ const Home = () => {
     }
   };
 
+  // Debounce: Update actual search query 500ms after user stops typing
+  useEffect(() => {
+    // Clear previous timer
+    if (debounceTimerRef.current !== null) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set new timer
+    debounceTimerRef.current = window.setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 500); // 500ms delay
+
+    // Cleanup function
+    return () => {
+      if (debounceTimerRef.current !== null) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [searchInput]);
+
+  // Reset to page 1 when search or filters change
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, sortBy, sortOrder]);
+
+  // Load posts when page, search, or filters change
   useEffect(() => {
     loadPosts(page);
-  }, [page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, searchQuery, sortBy, sortOrder]);
 
   const handleEdit = (updatedBlog: Post) => {
     setPosts((prev) =>
@@ -97,6 +135,20 @@ const Home = () => {
     }
   };
 
+  // Handle search input change (updates input display, debounce handles actual search)
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+  };
+
+  // Handle filter changes
+  const handleSortByChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value);
+  };
+
+  const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOrder(e.target.value);
+  };
+
   return (
     <PageLayout
       title="Bytes Odyssey"
@@ -112,6 +164,56 @@ const Home = () => {
       backgroundImage="/static/img/vechicle.jpg"
     >
       <section className="container mt-4 mb-5">
+        {/* Search and Filter Section */}
+        <div className="row mb-4">
+          <div className="col-12 col-md-6 mb-3 mb-md-0">
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search posts by title, subtitle, or content..."
+                value={searchInput}
+                onChange={handleSearchChange}
+              />
+              {searchInput && (
+                <button
+                  className="btn btn-outline-secondary"
+                  type="button"
+                  onClick={() => {
+                    setSearchInput("");
+                    setSearchQuery("");
+                  }}
+                  aria-label="Clear search"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="col-12 col-md-6">
+            <div className="d-flex gap-2">
+              <select
+                className="form-select"
+                value={sortBy}
+                onChange={handleSortByChange}
+                aria-label="Sort by"
+              >
+                <option value="date">Sort by Date</option>
+                <option value="title">Sort by Title</option>
+              </select>
+              <select
+                className="form-select"
+                value={sortOrder}
+                onChange={handleSortOrderChange}
+                aria-label="Sort order"
+              >
+                <option value="desc">Descending</option>
+                <option value="asc">Ascending</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         {error && <div className="alert alert-danger">{error}</div>}
 
         {loading ? (
@@ -121,7 +223,11 @@ const Home = () => {
             </div>
           </div>
         ) : !posts || posts.length === 0 ? (
-          <p className="text-center text-muted py-5">No posts available.</p>
+          <p className="text-center text-muted py-5">
+            {searchQuery 
+              ? `No posts found matching "${searchQuery}".` 
+              : "No posts available."}
+          </p>
         ) : (
           <>
             {posts.map((blog) => (
