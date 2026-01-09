@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5001";
+
 const Login = () => {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
@@ -130,7 +132,7 @@ const Login = () => {
                   {/* Google button */}
                   <div className="d-grid">
                     <a
-                      href="http://localhost:5001/api/auth/google"
+                      href={`${API_URL}/api/auth/google`}
                       className="btn btn-lg btn-light bg-white border shadow-sm d-flex align-items-center justify-content-center gap-2 text-uppercase fw-bold text-dark position-relative overflow-hidden"
                     >
                       {googleLogoSvg}
