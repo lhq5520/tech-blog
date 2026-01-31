@@ -13,6 +13,19 @@ export interface User {
   createdAt: string;
 }
 
+export interface Comment {
+  _id: string;
+  content: string;
+  postId: string;
+  userId?: string | {
+    _id: string;
+    email: string;
+  };
+  authorName?: string;
+  authorEmail?: string;
+  createdAt: string;
+}
+
 export type BlogFormData = {
   title: string;
   subtitle: string;

@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import BlogEditForm from "./BlogEditForm";
 import { useBlogForm } from "../hooks/useBlogForm";
 import { showSuccess, showError } from "../utils/toast";
+import CommentSection from "./CommentSection";
 import "../styles/blogContent.css";
 
 const BlogDetail = (): React.ReactElement => {
@@ -139,6 +140,9 @@ const BlogDetail = (): React.ReactElement => {
               </button>
             </div>
           )}
+
+          {/* Comment Section */}
+          <CommentSection postId={id} />
         </section>
       )}
     </PageLayout>

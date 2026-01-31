@@ -9,6 +9,7 @@ import postRoutes from './routes/postRoutes'
 import authRoutes from './routes/authRoutes'
 import userRoutes from './routes/userRoutes'
 import uploadRoutes from './routes/uploadRoutes'
+import commentRoutes from './routes/commentRoutes'
 
 import passport from './config/passport'
 import path from 'path'
@@ -46,7 +47,8 @@ mongoose
 app.use("/api/posts", postRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", userRoutes);
-app.use("/api/upload", uploadRoutes); 
+app.use("/api/upload", uploadRoutes);
+app.use("/api/comments", commentRoutes); 
 
 
 // Health check endpoint for Render

@@ -1,5 +1,3 @@
-import { post } from './client';
-
 export interface UploadImageResponse {
   url: string;
 }
