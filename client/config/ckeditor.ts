@@ -173,6 +173,9 @@ export const editorConfig = {
       { name: "resizeImage:50", value: "50", label: "50%" },
       { name: "resizeImage:75", value: "75", label: "75%" },
     ],
+    upload: {
+      types: ['jpeg', 'jpg', 'png', 'gif', 'webp', 'svg'],
+    },
   },
   table: {
     contentToolbar: [

@@ -9,6 +9,7 @@ import {
 } from "../api/posts";
 import { type Post } from "../types";
 import { useAuth } from "../context/AuthContext";
+import { showSuccess, showError } from "../utils/toast";
 
 /**
  * Home component - Main page displaying paginated blog posts
@@ -114,14 +115,16 @@ const Home = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this blog?")) {
+    if (window.confirm("Are you sure you want to delete this blog post?")) {
       try {
         await deletePost(id);
         setPosts((prev) => prev.filter((b) => b._id !== id));
-        alert("Blog deleted successfully!");
-      } catch (error) {
+        showSuccess("Blog post deleted successfully!");
+      } catch (error: any) {
         console.error("Error deleting blog:", error);
-        alert("Failed to delete blog.");
+        const errorMessage = error?.message || "Failed to delete blog post";
+        const errorDetails = error?.details || "This might be a network issue or server error.";
+        showError(errorMessage, errorDetails);
       }
     }
   };
@@ -154,14 +157,13 @@ const Home = () => {
       title="Bytes Odyssey"
       subtitle={
         user ? (
-          <Link to="/profile" className="text-white">
+          <Link to="/profile">
             Click Here To View Profile
           </Link>
         ) : (
           "Welcome to Weifan's Blog"
         )
       }
-      backgroundImage="/static/img/vechicle.jpg"
     >
       <section className="container mt-4 mb-5">
         {/* Search and Filter Section */}

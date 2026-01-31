@@ -15,7 +15,6 @@ const ProfilePage = () => {
     <PageLayout
       title="Your Profile"
       subtitle="View your account details below."
-      backgroundImage="/static/img/home-bg.jpg"
     >
       <div className="container mt-4 mb-5 text-center">
         {user && (

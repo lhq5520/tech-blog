@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import "../index.css";
+import "../styles/navbar.css";
 
 // Style to ensure proper z-index layering
 const headerStyle: React.CSSProperties = {
@@ -39,9 +40,10 @@ const contentStyle: React.CSSProperties = {
 interface PageLayoutProps {
   title: string;
   subtitle: ReactNode;
-  backgroundImage: string;
+  backgroundImage?: string;
   children: ReactNode;
   showFooter?: boolean;
+  compactHeader?: boolean;
 }
 
 const PageLayout = ({
@@ -50,32 +52,47 @@ const PageLayout = ({
   backgroundImage,
   children,
   showFooter = true,
+  compactHeader = false,
 }: PageLayoutProps) => {
+  // Compact header style with reduced height
+  const compactHeaderStyle: React.CSSProperties = {
+    ...headerStyle,
+    minHeight: '200px',
+    paddingBottom: '60px',
+  };
+
+  const headerStyleToUse = compactHeader ? compactHeaderStyle : headerStyle;
+
   return (
-    <div>
+    <div className={backgroundImage ? (compactHeader ? 'page-compact-header' : '') : 'page-no-bg'}>
       <Navbar />
-      <header className="masthead" style={headerStyle}>
-        {/* Background image with lazy loading */}
-        <img
-          src={backgroundImage}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          style={imageStyle}
-        />
-        {/* Overlay to replace :before pseudo-element */}
-        <div style={overlayStyle} />
-        <div className="container px-4 px-lg-5" style={contentStyle}>
-          <div className="row gx-4 gx-lg-5 justify-content-center">
-            <div className="col-md-10 col-lg-8 col-xl-7">
-              <div className="page-heading">
-                <h1>{title}</h1>
-                {subtitle && <span className="subheading">{subtitle}</span>}
+      {backgroundImage ? (
+        <header 
+          className={`masthead ${compactHeader ? 'masthead-compact' : ''}`} 
+          style={headerStyleToUse}
+        >
+          {/* Background image with lazy loading */}
+          <img
+            src={backgroundImage}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            style={imageStyle}
+          />
+          {/* Overlay to replace :before pseudo-element */}
+          <div style={overlayStyle} />
+          <div className="container px-4 px-lg-5" style={contentStyle}>
+            <div className="row gx-4 gx-lg-5 justify-content-center">
+              <div className="col-md-10 col-lg-8 col-xl-7">
+                <div className="page-heading">
+                  <h1 className={compactHeader ? 'compact-title' : ''}>{title}</h1>
+                  {subtitle && <span className={`subheading ${compactHeader ? 'italic-subtitle' : ''}`}>{subtitle}</span>}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      ) : null}
       <main>{children}</main>
       {showFooter && <Footer />}
     </div>

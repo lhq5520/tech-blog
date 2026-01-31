@@ -2,6 +2,11 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useLogout } from "../hooks/useLogout";
 
+// Cloudinary logo URL - can be changed to other logo URL
+// or read from environment variable: import.meta.env.VITE_NAVBAR_LOGO_URL
+const NAVBAR_LOGO_URL = import.meta.env.VITE_NAVBAR_LOGO_URL || 
+  "https://res.cloudinary.com/dkrmixgjd/image/upload/v1769899278/E6573B98F86F1F28C8E3FCABE4778694_vnndhi.jpg";
+
 const Navbar = () => {
   const { user } = useAuth();
   const handleLogout = useLogout();
@@ -9,9 +14,21 @@ const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light" id="mainNav">
       <div className="container px-4 px-lg-5">
-        <a className="navbar-brand" href="/">
-          BO
-        </a>
+        <Link className="navbar-brand" to="/" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <img 
+            src={NAVBAR_LOGO_URL} 
+            alt="Logo" 
+            style={{ 
+              height: "40px", 
+              width: "40px", 
+              objectFit: "cover",
+              borderRadius: "50%",
+              border: "2px solid rgba(255, 255, 255, 0.3)"
+            }}
+            loading="eager"
+          />
+          <span>BO</span>
+        </Link>
         <button
           className="navbar-toggler"
           type="button"

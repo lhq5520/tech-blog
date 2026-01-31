@@ -1,0 +1,57 @@
+/* Compact navbar for pages without background images */
+.page-no-bg #mainNav {
+  position: relative;
+  background-color: #fff;
+  border-bottom: 1px solid #dee2e6;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.page-no-bg #mainNav .navbar-brand {
+  color: #212529;
+}
+
+.page-no-bg #mainNav .navbar-nav > li.nav-item > a.nav-link {
+  color: #212529;
+}
+
+.page-no-bg #mainNav .navbar-nav > li.nav-item > a.nav-link:hover,
+.page-no-bg #mainNav .navbar-nav > li.nav-item > a.nav-link:focus {
+  color: #0085A1;
+}
+
+/* Reduce header padding when no background image */
+.page-no-bg header.masthead {
+  padding: 20px 0 20px;
+  min-height: auto;
+}
+
+/* Compact navbar for blog detail pages */
+.page-compact-header #mainNav {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.page-compact-header #mainNav .navbar-brand {
+  font-size: 1rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.page-compact-header #mainNav .navbar-nav > li.nav-item > a.nav-link {
+  font-size: 0.7rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Compact header styles */
+.masthead-compact .page-heading h1.compact-title {
+  font-size: 2rem;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.masthead-compact .page-heading .subheading.italic-subtitle {
+  font-style: italic;
+  font-size: 1rem;
+}

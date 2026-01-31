@@ -5,6 +5,7 @@ import { type Post } from "../types";
 import { useAuth } from "../context/AuthContext";
 import BlogEditForm from "./BlogEditForm";
 import { useBlogForm } from "../hooks/useBlogForm";
+import { showError, showSuccess } from "../utils/toast";
 
 interface BlogProps {
   blog: Post;
@@ -46,9 +47,10 @@ const BlogCard = ({
         subtitle: fullBlog.subtitle,
         content: fullBlog.content,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching full blog content:", error);
-      alert("Failed to load blog content for editing.");
+      const errorMessage = error?.message || "Failed to load blog content";
+      showError(errorMessage, "Unable to fetch the complete blog content. Please refresh the page and try again.");
     } finally {
       setLoadingContent(false);
     }
@@ -67,9 +69,12 @@ const BlogCard = ({
         onEdit(updatedBlog); // Use onEdit instead of onEditComplete
       }
       setEditMode(false); // Exit edit mode
-    } catch (error) {
+      showSuccess("Blog updated successfully!");
+    } catch (error: any) {
       console.error("Error updating blog:", error);
-      alert("Failed to update blog.");
+      const errorMessage = error?.message || "Failed to update blog";
+      const errorDetails = error?.details || "This might be a network issue or server error.";
+      showError(errorMessage, errorDetails);
     }
   };
 

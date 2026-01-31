@@ -5,7 +5,7 @@ const About = () => {
     <PageLayout
       title="About Byte Odyssey"
       subtitle="Every Huge Leap Starts with a Small Step"
-      backgroundImage="/static/img/computer.jpg"
+      backgroundImage="/static/img/vehicle.jpg"
     >
       {/* Main Content */}
       <main className="mb-4">

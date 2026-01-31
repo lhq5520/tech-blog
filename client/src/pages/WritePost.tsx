@@ -3,6 +3,7 @@ import PageLayout from "../components/PageLayout";
 import { createPost } from "../api/posts";
 import RichTextEditor from "../components/RichTextEditor";
 import { useRequireAuth } from "../hooks/useRequireAuth";
+import { showSuccess, showError } from "../utils/toast";
 
 const WritePost = () => {
   const [formData, setFormData] = useState({
@@ -36,10 +37,13 @@ const WritePost = () => {
 
       setFormData({ title: "", subtitle: "", content: "" });
       setError("");
-      alert("Post created successfully!");
-    } catch (error) {
+      showSuccess("Post created successfully!");
+    } catch (error: any) {
       console.error("Error creating post:", error);
-      alert("Failed to create post.");
+      const errorMessage = error?.message || "Failed to create post. Please check your connection and try again.";
+      const errorDetails = error?.details || "This might be a network issue or server error.";
+      setError(errorMessage);
+      showError(errorMessage, errorDetails);
     }
   };
 
@@ -51,7 +55,6 @@ const WritePost = () => {
     <PageLayout
       title="Creation Time"
       subtitle="Let the flow of the words sliding through your vein"
-      backgroundImage="/static/img/write.jpeg"
     >
       <div className="container mt-5 mb-5" style={{ maxWidth: "900px" }}>
         <form

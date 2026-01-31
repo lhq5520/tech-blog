@@ -8,8 +8,10 @@ import cookieParser from 'cookie-parser';
 import postRoutes from './routes/postRoutes'
 import authRoutes from './routes/authRoutes'
 import userRoutes from './routes/userRoutes'
+import uploadRoutes from './routes/uploadRoutes'
 
 import passport from './config/passport'
+import path from 'path'
 
 const app = express();
 
@@ -22,6 +24,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(passport.initialize());
 
@@ -42,7 +45,8 @@ mongoose
 
 app.use("/api/posts", postRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/profile", userRoutes); 
+app.use("/api/profile", userRoutes);
+app.use("/api/upload", uploadRoutes); 
 
 
 // Health check endpoint for Render

@@ -5,7 +5,6 @@ const Register = () => {
     <PageLayout
       title="Registration Closed"
       subtitle="Oops!"
-      backgroundImage="/static/img/home-bg.jpg"
     >
       <div className="container mt-5 mb-5 text-center">
         <h2>Sorry!</h2>

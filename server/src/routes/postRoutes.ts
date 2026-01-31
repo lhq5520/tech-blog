@@ -22,8 +22,23 @@ router.post("/", verifyToken, async (req:Request, res:Response): Promise<void> =
     });
     await newPost.save();
     res.status(201).json(newPost);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to create post" });
+  } catch (error: any) {
+    console.error("Error creating post:", error);
+    
+    // Handle MongoDB validation errors
+    if (error.name === 'ValidationError') {
+      res.status(400).json({ 
+        error: "Validation error",
+        details: Object.values(error.errors).map((e: any) => e.message).join(', ')
+      });
+      return;
+    }
+
+    const errorMessage = error?.message || "An unexpected error occurred while creating the post";
+    res.status(500).json({ 
+      error: "Failed to create post",
+      details: errorMessage
+    });
   }
 });
 
@@ -133,50 +148,141 @@ router.get("/:id", async (req:Request, res:Response): Promise<void> => {
 // Update a post (PUT /posts/:id)
 router.put("/:id", verifyToken, async (req:Request, res:Response): Promise<void> => {
   const { title, subtitle, content } = req.body;
+  const postId = req.params.id;
+  const userId = req.user!.id;
 
   if (!title || !subtitle || !content) {
-    res.status(400).json({ error: "All fields are required." });
+    res.status(400).json({ 
+      error: "All fields are required.",
+      details: "Please make sure title, subtitle, and content are all filled in."
+    });
     return;
   }
 
   try {
+    // First check if post exists
+    const existingPost = await Post.findById(postId);
+    
+    if (!existingPost) {
+      res.status(404).json({ 
+        error: "Post not found",
+        details: `The post with ID "${postId}" does not exist in the database. It may have been deleted or the ID is incorrect.`
+      });
+      return;
+    }
+
+    // Check if user owns the post
+    if (existingPost.userId.toString() !== userId.toString()) {
+      res.status(403).json({ 
+        error: "Permission denied",
+        details: `You don't have permission to edit this post. This post belongs to a different user.`
+      });
+      return;
+    }
+
+    // Update the post
     const updatedPost = await Post.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user!.id }, // Ensure user owns the post
+      { _id: postId, userId: userId },
       { title, subtitle, content },
       { new: true } // Return updated document
     );
 
     if (!updatedPost) {
-      res.status(404).json({ error: "Post not found" });
+      res.status(500).json({ 
+        error: "Failed to update post",
+        details: "The post exists but the update operation failed. Please try again."
+      });
       return;
     }
 
     res.json(updatedPost);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating post:", error);
-    res.status(500).json({ error: "Failed to update post." });
+    
+    // Handle MongoDB validation errors
+    if (error.name === 'ValidationError') {
+      res.status(400).json({ 
+        error: "Validation error",
+        details: Object.values(error.errors).map((e: any) => e.message).join(', ')
+      });
+      return;
+    }
+
+    // Handle MongoDB cast errors (invalid ID format)
+    if (error.name === 'CastError') {
+      res.status(400).json({ 
+        error: "Invalid post ID",
+        details: `The post ID "${postId}" is not in a valid format.`
+      });
+      return;
+    }
+
+    const errorMessage = error?.message || "An unexpected error occurred while updating the post";
+    res.status(500).json({ 
+      error: "Failed to update post",
+      details: errorMessage
+    });
   }
 });
 
 
 router.delete("/:id", verifyToken, async (req:Request, res:Response): Promise<void> => {
+  const postId = req.params.id;
+  const userId = req.user!.id;
+
   try {
+    // First check if post exists
+    const existingPost = await Post.findById(postId);
+    
+    if (!existingPost) {
+      res.status(404).json({ 
+        error: "Post not found",
+        details: `The post with ID "${postId}" does not exist in the database. It may have already been deleted.`
+      });
+      return;
+    }
+
+    // Check if user owns the post
+    if (existingPost.userId.toString() !== userId.toString()) {
+      res.status(403).json({ 
+        error: "Permission denied",
+        details: `You don't have permission to delete this post. This post belongs to a different user.`
+      });
+      return;
+    }
+
     const deletedPost = await Post.findOneAndDelete({
-      _id: req.params.id, // The ID from the request URL
-      userId: req.user!.id, // Ensure the user owns the post
+      _id: postId,
+      userId: userId,
     });
 
     if (!deletedPost) {
-      // Return 404 if the post was not found
-      res.status(404).json({ error: "Post not found" });
+      res.status(500).json({ 
+        error: "Failed to delete post",
+        details: "The post exists but the deletion operation failed. Please try again."
+      });
       return;
     }
 
     // Return 204 No Content for successful deletion
     res.status(204).send();
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting post:", error);
-    res.status(500).json({ error: "Failed to delete post." });
+    
+    // Handle MongoDB cast errors (invalid ID format)
+    if (error.name === 'CastError') {
+      res.status(400).json({ 
+        error: "Invalid post ID",
+        details: `The post ID "${postId}" is not in a valid format.`
+      });
+      return;
+    }
+
+    const errorMessage = error?.message || "An unexpected error occurred while deleting the post";
+    res.status(500).json({ 
+      error: "Failed to delete post",
+      details: errorMessage
+    });
   }
 });
 

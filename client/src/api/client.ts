@@ -19,8 +19,31 @@ const request = async <T>(endpoint: string, options: RequestInit = {}): Promise<
       },
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
+    
     if (!response.ok) {
-      throw new Error(`something wrong with response ${response.statusText}`);
+      // Try to parse error message from response
+      let errorMessage = `Request failed: ${response.status} ${response.statusText}`;
+      let errorDetails: string | undefined;
+      
+      try {
+        const errorData = await response.json();
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+        if (errorData.details) {
+          errorDetails = errorData.details;
+        }
+      } catch {
+        // If JSON parsing fails, use status text
+      }
+      
+      const error = new Error(errorMessage) as any;
+      if (errorDetails) {
+        error.details = errorDetails;
+      }
+      throw error;
     }
 
     // DELETE returns 204 No Content; avoid parsing empty body
@@ -37,6 +60,7 @@ const request = async <T>(endpoint: string, options: RequestInit = {}): Promise<
     return response.json();
 
   } catch(error: any){
+    console.error('API request error:', error);
     throw error;
   }
 };
