@@ -8,6 +8,7 @@ interface BlogPublish {
   subtitle: string;
   content: string;
   coverImage?: string;
+  tags?: string[];
 }
 
 export interface PostsResponse {
@@ -28,7 +29,8 @@ export const fetchPaginatedPosts = (
   limit: number = 5,
   search?: string,
   sortBy?: string,
-  sortOrder?: string
+  sortOrder?: string,
+  tag?: string
 ) => {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -37,6 +39,10 @@ export const fetchPaginatedPosts = (
   
   if (search && search.trim()) {
     params.append('search', search.trim());
+  }
+  
+  if (tag && tag.trim()) {
+    params.append('tag', tag.trim());
   }
   
   if (sortBy) {
@@ -48,6 +54,11 @@ export const fetchPaginatedPosts = (
   }
   
   return get<PostsResponse>(`${POSTS_ENDPOINT}/pagelimit?${params.toString()}`);
+};
+
+// Get all unique tags
+export const fetchAllTags = (): Promise<{ tags: string[] }> => {
+  return get<{ tags: string[] }>(`${POSTS_ENDPOINT}/tags/all`);
 };
 
 // Get a single post

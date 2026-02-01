@@ -62,6 +62,7 @@ const BlogDetail = (): React.ReactElement => {
           subtitle: data.subtitle,
           content: data.content,
           coverImage: data.coverImage || "",
+          tags: data.tags || [],
         });
       } catch (error) {
         console.error("Error fetching blog:", error);
@@ -153,6 +154,7 @@ const BlogDetail = (): React.ReactElement => {
       subtitle: blog!.subtitle,
       content: blog!.content,
       coverImage: blog!.coverImage || "",
+      tags: blog!.tags || [],
     }); // Reset to original data
     clearDraft(); // Clear draft when canceling
     setEditMode(false);
@@ -252,6 +254,7 @@ const BlogDetail = (): React.ReactElement => {
             errors={errors}
             onChange={handleChange}
             onContentChange={(content) => setFormData({ ...formData, content })}
+            onTagsChange={(tags) => setFormData({ ...formData, tags })}
             onSave={handleSave}
             onCancel={handleCancel}
             onImageUpload={handleImageUpload}
@@ -280,6 +283,20 @@ const BlogDetail = (): React.ReactElement => {
                 }).format(new Date(blog.createdAt))}
               </span>
             </div>
+            {/* Tags */}
+            {blog.tags && blog.tags.length > 0 && (
+              <div className="d-flex flex-wrap gap-2 mt-3">
+                {blog.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="badge bg-primary"
+                    style={{ fontSize: "0.875rem", padding: "0.5rem 0.75rem" }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <div 
             className="blog-content" 

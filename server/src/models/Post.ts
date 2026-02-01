@@ -6,6 +6,7 @@ interface Post {
   subtitle: string;
   content: string;
   coverImage?: string;
+  tags?: string[];
   createdAt: Date;
   userId: Schema.Types.ObjectId;
 }
@@ -15,6 +16,7 @@ const PostSchema = new Schema <Post>({
   subtitle: { type: String, required: true },
   content: { type: String, required: true },
   coverImage: { type: String, required: false },
+  tags: { type: [String], default: [] },
   createdAt: { type: Date, default: Date.now },
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
 });

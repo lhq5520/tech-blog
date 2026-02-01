@@ -33,6 +33,7 @@ const BlogCard = ({
     subtitle: blog.subtitle,
     content: "",
     coverImage: blog.coverImage || "",
+    tags: blog.tags || [],
   });
 
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -50,6 +51,7 @@ const BlogCard = ({
         subtitle: fullBlog.subtitle,
         content: fullBlog.content,
         coverImage: fullBlog.coverImage || "",
+        tags: fullBlog.tags || [],
       });
     } catch (error: any) {
       console.error("Error fetching full blog content:", error);
@@ -106,6 +108,7 @@ const BlogCard = ({
       subtitle: blog.subtitle,
       content: "", // Reset to empty; will be fetched again if re-entering edit mode
       coverImage: blog.coverImage || "",
+      tags: blog.tags || [],
     });
     setEditMode(false);
   };
@@ -222,6 +225,7 @@ const BlogCard = ({
                 errors={errors}
                 onChange={handleChange}
                 onContentChange={(content) => setFormData({ ...formData, content })}
+                onTagsChange={(tags) => setFormData({ ...formData, tags })}
                 onSave={handleSave}
                 onCancel={handleCancel}
                 onImageUpload={handleImageUpload}
@@ -262,24 +266,73 @@ const BlogCard = ({
                   }}
                 />
               </Link>
-              {/* Tag Badge */}
-              <span
+              {/* Tag Badges */}
+              <div
                 style={{
                   position: "absolute",
                   top: "12px",
                   right: "12px",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  padding: "4px 12px",
-                  borderRadius: "4px",
-                  fontSize: "0.75rem",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px",
+                  alignItems: "flex-end",
                 }}
               >
-                Blog
-              </span>
+                {blog.tags && blog.tags.length > 0 ? (
+                  <>
+                    {blog.tags.slice(0, 2).map((tag, index) => (
+                      <span
+                        key={index}
+                        style={{
+                          backgroundColor: "#007bff",
+                          color: "white",
+                          padding: "4px 12px",
+                          borderRadius: "4px",
+                          fontSize: "0.75rem",
+                          fontWeight: "600",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                          whiteSpace: "nowrap",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {blog.tags.length > 2 && (
+                      <span
+                        style={{
+                          backgroundColor: "rgba(0, 123, 255, 0.8)",
+                          color: "white",
+                          padding: "4px 12px",
+                          borderRadius: "4px",
+                          fontSize: "0.75rem",
+                          fontWeight: "600",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                        }}
+                      >
+                        +{blog.tags.length - 2}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span
+                    style={{
+                      backgroundColor: "#6c757d",
+                      color: "white",
+                      padding: "4px 12px",
+                      borderRadius: "4px",
+                      fontSize: "0.75rem",
+                      fontWeight: "600",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                    }}
+                  >
+                    Uncategorized
+                  </span>
+                )}
+              </div>
             </div>
           ) : (
             <div style={{ 
@@ -326,6 +379,28 @@ const BlogCard = ({
             }}>
               {blog.subtitle}
             </p>
+
+            {/* Tags */}
+            <div className="d-flex flex-wrap gap-1 mb-2">
+              {blog.tags && blog.tags.length > 0 ? (
+                blog.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="badge bg-secondary"
+                    style={{ fontSize: "0.75rem" }}
+                  >
+                    {tag}
+                  </span>
+                ))
+              ) : (
+                <span
+                  className="badge bg-secondary"
+                  style={{ fontSize: "0.75rem" }}
+                >
+                  Uncategorized
+                </span>
+              )}
+            </div>
 
             {/* Metadata */}
             <div className="d-flex align-items-center gap-4" style={{ 

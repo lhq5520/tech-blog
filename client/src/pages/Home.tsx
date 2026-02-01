@@ -4,6 +4,7 @@ import PageLayout from "../components/PageLayout";
 import BlogCard from "../components/BlogCard";
 import {
   fetchPaginatedPosts,
+  fetchAllTags,
   deletePost,
   type PostsResponse,
 } from "../api/posts";
@@ -53,6 +54,8 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState(""); // Actual search query used for API (debounced)
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("desc");
+  const [selectedTag, setSelectedTag] = useState<string>("");
+  const [allTags, setAllTags] = useState<string[]>([]);
 
   const LIMIT = 6;
   const debounceTimerRef = useRef<number | null>(null);
@@ -65,7 +68,8 @@ const Home = () => {
         LIMIT,
         searchQuery || undefined,
         sortBy,
-        sortOrder
+        sortOrder,
+        selectedTag || undefined
       );
       setPosts(data.posts || []);
       setTotalPages(data.totalPages);
@@ -77,6 +81,19 @@ const Home = () => {
       setLoading(false);
     }
   };
+
+  // Load all tags on mount
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const response = await fetchAllTags();
+        setAllTags(response.tags || []);
+      } catch (err) {
+        console.error("Failed to fetch tags:", err);
+      }
+    };
+    loadTags();
+  }, []);
 
   // Debounce: Update actual search query 500ms after user stops typing
   useEffect(() => {
@@ -101,13 +118,13 @@ const Home = () => {
   // Reset to page 1 when search or filters change
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, sortBy, sortOrder]);
+  }, [searchQuery, sortBy, sortOrder, selectedTag]);
 
   // Load posts when page, search, or filters change
   useEffect(() => {
     loadPosts(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, searchQuery, sortBy, sortOrder]);
+  }, [page, searchQuery, sortBy, sortOrder, selectedTag]);
 
   const handleEdit = (updatedBlog: Post) => {
     setPosts((prev) =>
@@ -232,6 +249,43 @@ const Home = () => {
           </div>
         </div>
 
+        {/* Tag Filter Section */}
+        <div className="row mb-4">
+          <div className="col-12">
+            <label className="form-label fw-bold">Filter by Tag:</label>
+            <div className="d-flex flex-wrap gap-2 align-items-center">
+              <button
+                className={`btn btn-sm ${selectedTag === "" ? "btn-primary" : "btn-outline-primary"}`}
+                onClick={() => setSelectedTag("")}
+              >
+                All Posts
+              </button>
+              {allTags.map((tag) => (
+                <button
+                  key={tag}
+                  className={`btn btn-sm ${selectedTag === tag ? "btn-primary" : "btn-outline-primary"}`}
+                  onClick={() => setSelectedTag(tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+              {allTags.length === 0 && (
+                <span className="text-muted">No tags available</span>
+              )}
+            </div>
+            {selectedTag && (
+              <div className="mt-2">
+                <button
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => setSelectedTag("")}
+                >
+                  Clear tag filter
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         {error && <div className="alert alert-danger">{error}</div>}
 
         {loading ? (
@@ -244,6 +298,8 @@ const Home = () => {
           <p className="text-center text-muted py-5">
             {searchQuery 
               ? `No posts found matching "${searchQuery}".` 
+              : selectedTag
+              ? `No posts found with tag "${selectedTag}".`
               : "No posts available."}
           </p>
         ) : (

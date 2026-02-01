@@ -5,6 +5,7 @@ export interface Post {
   subtitle: string;
   content: string;
   coverImage?: string;
+  tags?: string[];
   createdAt: string;
 }
 
@@ -34,4 +35,5 @@ export type BlogFormData = {
   subtitle: string;
   content: string;
   coverImage?: string;
+  tags?: string[];
 };

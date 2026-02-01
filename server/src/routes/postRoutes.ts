@@ -6,7 +6,7 @@ const router = express.Router()
 
 // Create a new post (user-specific)
 router.post("/", verifyToken, async (req:Request, res:Response): Promise<void> => {
-  const { title, subtitle, content, coverImage } = req.body;
+  const { title, subtitle, content, coverImage, tags } = req.body;
 
   if (!title || !subtitle || !content) {
     res.status(400).json({ error: "All fields are required." });
@@ -14,11 +14,28 @@ router.post("/", verifyToken, async (req:Request, res:Response): Promise<void> =
   }
 
   try {
+    // Process tags: ensure it's an array and trim each tag
+    let processedTags: string[] = [];
+    if (tags) {
+      if (Array.isArray(tags)) {
+        processedTags = tags
+          .map((tag: any) => String(tag).trim())
+          .filter((tag: string) => tag.length > 0);
+      } else if (typeof tags === 'string') {
+        // Support comma-separated string
+        processedTags = tags
+          .split(',')
+          .map((tag: string) => tag.trim())
+          .filter((tag: string) => tag.length > 0);
+      }
+    }
+
     const newPost = new Post({
       title,
       subtitle,
       content,
       coverImage: coverImage || undefined,
+      tags: processedTags,
       userId: req.user!.id, // Link to the authenticated user
     });
     await newPost.save();
@@ -43,23 +60,27 @@ router.post("/", verifyToken, async (req:Request, res:Response): Promise<void> =
   }
 });
 
-// Get all posts for everyone (with optional search)
+// Get all posts for everyone (with optional search and tag filter)
 router.get("/", async (req:Request, res:Response): Promise<void> => {
   try {
     const searchQuery = req.query.search as string | undefined;
+    const tagFilter = req.query.tag as string | undefined;
     
     // Build query object
     let query: any = {};
     
     // If search query exists, search in title, subtitle, and content
     if (searchQuery && searchQuery.trim()) {
-      query = {
-        $or: [
-          { title: { $regex: searchQuery, $options: "i" } },
-          { subtitle: { $regex: searchQuery, $options: "i" } },
-          { content: { $regex: searchQuery, $options: "i" } },
-        ],
-      };
+      query.$or = [
+        { title: { $regex: searchQuery, $options: "i" } },
+        { subtitle: { $regex: searchQuery, $options: "i" } },
+        { content: { $regex: searchQuery, $options: "i" } },
+      ];
+    }
+    
+    // If tag filter exists, filter by tag
+    if (tagFilter && tagFilter.trim()) {
+      query.tags = { $in: [tagFilter.trim()] };
     }
     
     const posts = await Post.find(query).sort({ createdAt: -1 });
@@ -69,13 +90,14 @@ router.get("/", async (req:Request, res:Response): Promise<void> => {
   }
 });
 
-// Get all posts for everyone (with pagination, search, and sorting)
+// Get all posts for everyone (with pagination, search, sorting, and tag filter)
 router.get("/pagelimit", async (req:Request, res:Response): Promise<void> => {
   try {
     // 1. Get pagination parameters (default: page 1, 5 posts per page)
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 5;
     const searchQuery = req.query.search as string | undefined;
+    const tagFilter = req.query.tag as string | undefined;
     const sortBy = req.query.sortBy as string || "date"; // "date" or "title"
     const sortOrder = req.query.sortOrder as string || "desc"; // "asc" or "desc"
     
@@ -85,13 +107,16 @@ router.get("/pagelimit", async (req:Request, res:Response): Promise<void> => {
     // 3. Build search query
     let query: any = {};
     if (searchQuery && searchQuery.trim()) {
-      query = {
-        $or: [
-          { title: { $regex: searchQuery, $options: "i" } },
-          { subtitle: { $regex: searchQuery, $options: "i" } },
-          { content: { $regex: searchQuery, $options: "i" } },
-        ],
-      };
+      query.$or = [
+        { title: { $regex: searchQuery, $options: "i" } },
+        { subtitle: { $regex: searchQuery, $options: "i" } },
+        { content: { $regex: searchQuery, $options: "i" } },
+      ];
+    }
+    
+    // Add tag filter if provided
+    if (tagFilter && tagFilter.trim()) {
+      query.tags = { $in: [tagFilter.trim()] };
     }
 
     // 4. Build sort object
@@ -148,7 +173,7 @@ router.get("/:id", async (req:Request, res:Response): Promise<void> => {
 
 // Update a post (PUT /posts/:id)
 router.put("/:id", verifyToken, async (req:Request, res:Response): Promise<void> => {
-  const { title, subtitle, content, coverImage } = req.body;
+  const { title, subtitle, content, coverImage, tags } = req.body;
   const postId = req.params.id;
   const userId = req.user!.id;
 
@@ -181,10 +206,29 @@ router.put("/:id", verifyToken, async (req:Request, res:Response): Promise<void>
       return;
     }
 
+    // Process tags: ensure it's an array and trim each tag
+    let processedTags: string[] = [];
+    if (tags !== undefined) {
+      if (Array.isArray(tags)) {
+        processedTags = tags
+          .map((tag: any) => String(tag).trim())
+          .filter((tag: string) => tag.length > 0);
+      } else if (typeof tags === 'string') {
+        // Support comma-separated string
+        processedTags = tags
+          .split(',')
+          .map((tag: string) => tag.trim())
+          .filter((tag: string) => tag.length > 0);
+      }
+    }
+
     // Update the post
     const updateData: any = { title, subtitle, content };
     if (coverImage !== undefined) {
       updateData.coverImage = coverImage || undefined;
+    }
+    if (tags !== undefined) {
+      updateData.tags = processedTags;
     }
     const updatedPost = await Post.findOneAndUpdate(
       { _id: postId, userId: userId },
@@ -288,6 +332,30 @@ router.delete("/:id", verifyToken, async (req:Request, res:Response): Promise<vo
       error: "Failed to delete post",
       details: errorMessage
     });
+  }
+});
+
+// Get all unique tags
+router.get("/tags/all", async (req:Request, res:Response): Promise<void> => {
+  try {
+    const posts = await Post.find({}, { tags: 1 });
+    const allTags = new Set<string>();
+    
+    posts.forEach((post) => {
+      if (post.tags && Array.isArray(post.tags)) {
+        post.tags.forEach((tag) => {
+          if (tag && tag.trim()) {
+            allTags.add(tag.trim());
+          }
+        });
+      }
+    });
+    
+    const sortedTags = Array.from(allTags).sort();
+    res.json({ tags: sortedTags });
+  } catch (error) {
+    console.error("Error fetching tags:", error);
+    res.status(500).json({ error: "Failed to fetch tags" });
   }
 });
 
