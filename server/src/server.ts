@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes'
 import userRoutes from './routes/userRoutes'
 import uploadRoutes from './routes/uploadRoutes'
 import commentRoutes from './routes/commentRoutes'
+import statsRoutes from './routes/statsRoutes'
 
 import passport from './config/passport'
 import path from 'path'
@@ -48,7 +49,8 @@ app.use("/api/posts", postRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", userRoutes);
 app.use("/api/upload", uploadRoutes);
-app.use("/api/comments", commentRoutes); 
+app.use("/api/comments", commentRoutes);
+app.use("/api/stats", statsRoutes); 
 
 
 // Health check endpoint for Render

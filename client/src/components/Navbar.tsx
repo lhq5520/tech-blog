@@ -67,6 +67,11 @@ const Navbar = () => {
                   </Link>
                 </li>
                 <li className="nav-item">
+                  <Link className="nav-link px-lg-3 py-3 py-lg-4" to="/stats">
+                    Statistics
+                  </Link>
+                </li>
+                <li className="nav-item">
                   <Link
                     to="#"
                     className="nav-link px-lg-3 py-3 py-lg-4 btn btn-link"

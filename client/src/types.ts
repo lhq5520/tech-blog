@@ -6,6 +6,7 @@ export interface Post {
   content: string;
   coverImage?: string;
   tags?: string[];
+  views?: number;
   createdAt: string;
 }
 

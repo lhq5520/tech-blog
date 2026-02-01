@@ -25,6 +25,7 @@ const BlogDetail = (): React.ReactElement => {
   const [draftData, setDraftData] = useState<BlogFormData | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const draftRestoredRef = useRef<string | null>(null); // Track which draft has been restored
+  const loadingRef = useRef<boolean>(false); // Track if currently loading to prevent duplicate calls
 
   const {
     formData,
@@ -53,24 +54,47 @@ const BlogDetail = (): React.ReactElement => {
 
   // Load the blog when the component mounts
   useEffect(() => {
+    if (!id) return;
+    
+    // Prevent duplicate API calls in React strict mode (development)
+    if (loadingRef.current) {
+      return;
+    }
+    
+    let isMounted = true;
+    loadingRef.current = true;
+    
     const loadBlog = async () => {
       try {
-        const data = await fetchSinglePost(id!);
-        setBlog(data);
-        setFormData({
-          title: data.title,
-          subtitle: data.subtitle,
-          content: data.content,
-          coverImage: data.coverImage || "",
-          tags: data.tags || [],
-        });
+        const data = await fetchSinglePost(id);
+        if (isMounted) {
+          setBlog(data);
+          setFormData({
+            title: data.title,
+            subtitle: data.subtitle,
+            content: data.content,
+            coverImage: data.coverImage || "",
+            tags: data.tags || [],
+          });
+        }
       } catch (error) {
         console.error("Error fetching blog:", error);
+        loadingRef.current = false; // Reset on error so it can be retried
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          loadingRef.current = false;
+        }
       }
     };
+    
     loadBlog();
+    
+    return () => {
+      isMounted = false;
+      // Reset loading flag when id changes or component unmounts
+      loadingRef.current = false;
+    };
   }, [id]);
 
   // Load draft when entering edit mode (only once per edit session)
