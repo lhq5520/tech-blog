@@ -9,6 +9,7 @@ interface Comment {
   authorName?: string; // For anonymous users
   authorEmail?: string; // For anonymous users (optional)
   ipAddress?: string; // For rate limiting and deletion verification
+  parentCommentId?: Schema.Types.ObjectId; // For nested comments (replies)
 }
 
 // 2.create schema, pass down <T>
@@ -20,6 +21,7 @@ const CommentSchema = new Schema<Comment>({
   authorName: { type: String, required: false },
   authorEmail: { type: String, required: false },
   ipAddress: { type: String, required: false },
+  parentCommentId: { type: Schema.Types.ObjectId, ref: "Comment", required: false },
 });
 
 // 3.export model

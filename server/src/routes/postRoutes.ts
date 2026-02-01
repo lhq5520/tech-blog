@@ -6,7 +6,7 @@ const router = express.Router()
 
 // Create a new post (user-specific)
 router.post("/", verifyToken, async (req:Request, res:Response): Promise<void> => {
-  const { title, subtitle, content } = req.body;
+  const { title, subtitle, content, coverImage } = req.body;
 
   if (!title || !subtitle || !content) {
     res.status(400).json({ error: "All fields are required." });
@@ -18,6 +18,7 @@ router.post("/", verifyToken, async (req:Request, res:Response): Promise<void> =
       title,
       subtitle,
       content,
+      coverImage: coverImage || undefined,
       userId: req.user!.id, // Link to the authenticated user
     });
     await newPost.save();
@@ -147,7 +148,7 @@ router.get("/:id", async (req:Request, res:Response): Promise<void> => {
 
 // Update a post (PUT /posts/:id)
 router.put("/:id", verifyToken, async (req:Request, res:Response): Promise<void> => {
-  const { title, subtitle, content } = req.body;
+  const { title, subtitle, content, coverImage } = req.body;
   const postId = req.params.id;
   const userId = req.user!.id;
 
@@ -181,9 +182,13 @@ router.put("/:id", verifyToken, async (req:Request, res:Response): Promise<void>
     }
 
     // Update the post
+    const updateData: any = { title, subtitle, content };
+    if (coverImage !== undefined) {
+      updateData.coverImage = coverImage || undefined;
+    }
     const updatedPost = await Post.findOneAndUpdate(
       { _id: postId, userId: userId },
-      { title, subtitle, content },
+      updateData,
       { new: true } // Return updated document
     );
 

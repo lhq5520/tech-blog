@@ -15,7 +15,7 @@ const getClientIp = (req: Request): string => {
 
 // Create a new comment (no authentication required, but rate limited)
 router.post("/", commentLimiter, async (req: Request, res: Response): Promise<void> => {
-  const { content, postId, authorName, authorEmail } = req.body;
+  const { content, postId, authorName, authorEmail, parentCommentId } = req.body;
 
   if (!content || !postId) {
     res.status(400).json({ 
@@ -53,12 +53,36 @@ router.post("/", commentLimiter, async (req: Request, res: Response): Promise<vo
       return;
     }
 
+    // If parentCommentId is provided, verify it exists and belongs to the same post
+    if (parentCommentId) {
+      const parentComment = await Comment.findById(parentCommentId);
+      if (!parentComment) {
+        res.status(404).json({ 
+          error: "Parent comment not found",
+          details: `The comment you're replying to does not exist.`
+        });
+        return;
+      }
+      if (parentComment.postId.toString() !== postId) {
+        res.status(400).json({ 
+          error: "Invalid parent comment",
+          details: "The parent comment does not belong to this post."
+        });
+        return;
+      }
+    }
+
     const ipAddress = getClientIp(req);
     const commentData: any = {
       content: content.trim(),
       postId,
       ipAddress,
     };
+
+    // Add parentCommentId if it's a reply
+    if (parentCommentId) {
+      commentData.parentCommentId = parentCommentId;
+    }
 
     // If user is authenticated, use userId; otherwise use authorName/authorEmail
     if (req.user) {
@@ -106,7 +130,7 @@ router.post("/", commentLimiter, async (req: Request, res: Response): Promise<vo
   }
 });
 
-// Get all comments for a specific post
+// Get all comments for a specific post (with nested structure)
 router.get("/post/:postId", async (req: Request, res: Response): Promise<void> => {
   const { postId } = req.params;
 
@@ -121,11 +145,44 @@ router.get("/post/:postId", async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const comments = await Comment.find({ postId })
+    // Fetch all comments for this post
+    const allComments = await Comment.find({ postId })
       .populate('userId', 'email')
-      .sort({ createdAt: -1 }); // Most recent first
+      .sort({ createdAt: 1 }); // Oldest first for proper nesting
     
-    res.json(comments);
+    // Build nested structure: separate top-level comments and replies
+    const topLevelComments = allComments.filter(comment => !comment.parentCommentId);
+    const repliesMap = new Map<string, any[]>();
+    
+    // Group replies by parent comment ID
+    allComments.forEach(comment => {
+      if (comment.parentCommentId) {
+        const parentId = comment.parentCommentId.toString();
+        if (!repliesMap.has(parentId)) {
+          repliesMap.set(parentId, []);
+        }
+        repliesMap.get(parentId)!.push(comment);
+      }
+    });
+    
+    // Attach replies to their parent comments
+    const buildCommentTree = (comment: any): any => {
+      const commentObj = comment.toObject ? comment.toObject() : comment;
+      const commentId = commentObj._id.toString();
+      const replies = repliesMap.get(commentId) || [];
+      
+      return {
+        ...commentObj,
+        replies: replies.map(buildCommentTree).sort((a: any, b: any) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        )
+      };
+    };
+    
+    const nestedComments = topLevelComments.map(buildCommentTree)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    res.json(nestedComments);
   } catch (error: any) {
     console.error("Error fetching comments:", error);
     
@@ -187,15 +244,21 @@ router.delete("/:id", deleteCommentLimiter, async (req: Request, res: Response):
       return;
     }
 
-    const deletedComment = await Comment.findByIdAndDelete(commentId);
+    // Recursively delete all child comments (replies)
+    const deleteCommentAndReplies = async (id: string): Promise<void> => {
+      // Find all replies to this comment
+      const replies = await Comment.find({ parentCommentId: id });
+      
+      // Recursively delete all replies
+      for (const reply of replies) {
+        await deleteCommentAndReplies(reply._id.toString());
+      }
+      
+      // Delete the comment itself
+      await Comment.findByIdAndDelete(id);
+    };
 
-    if (!deletedComment) {
-      res.status(500).json({ 
-        error: "Failed to delete comment",
-        details: "The comment exists but the deletion operation failed. Please try again."
-      });
-      return;
-    }
+    await deleteCommentAndReplies(commentId);
 
     // Return 204 No Content for successful deletion
     res.status(204).send();

@@ -10,6 +10,7 @@ import {
 import { type Post } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { showSuccess, showError } from "../utils/toast";
+import { deleteImage } from "../api/upload";
 
 /**
  * Home component - Main page displaying paginated blog posts
@@ -24,7 +25,7 @@ import { showSuccess, showError } from "../utils/toast";
  * return <Home />
  *
  * @remarks
- * - Uses pagination with a configurable limit of 5 posts per page
+ * - Uses pagination with a configurable limit of 6 posts per page
  * - Automatically scrolls to top when changing pages for better UX
  * - Displays error messages and loading states to the user
  * - Requires useAuth hook to be available from context
@@ -53,7 +54,7 @@ const Home = () => {
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("desc");
 
-  const LIMIT = 5;
+  const LIMIT = 6;
   const debounceTimerRef = useRef<number | null>(null);
 
   const loadPosts = async (pageToFetch: number) => {
@@ -117,6 +118,21 @@ const Home = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this blog post?")) {
       try {
+        // Find the post to get its cover image
+        const postToDelete = posts.find((p) => p._id === id);
+        
+        // Delete cover image from Cloudinary if it exists
+        if (postToDelete?.coverImage && postToDelete.coverImage.includes('cloudinary.com')) {
+          try {
+            await deleteImage(postToDelete.coverImage);
+            console.log("Cover image deleted from Cloudinary");
+          } catch (error: any) {
+            console.error("Error deleting cover image from Cloudinary:", error);
+            // Continue with post deletion even if image deletion fails
+          }
+        }
+
+        // Delete the post
         await deletePost(id);
         setPosts((prev) => prev.filter((b) => b._id !== id));
         showSuccess("Blog post deleted successfully!");
@@ -232,14 +248,17 @@ const Home = () => {
           </p>
         ) : (
           <>
-            {posts.map((blog) => (
-              <BlogCard
-                key={blog._id}
-                blog={blog}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))}
+            <div className="row g-4">
+              {posts.map((blog) => (
+                <div key={blog._id} className="col-12 col-md-6 col-lg-4">
+                  <BlogCard
+                    blog={blog}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                </div>
+              ))}
+            </div>
 
             {/* Brand new numeric pagination navigation bar */}
             <div className="mt-5 d-flex justify-content-center">

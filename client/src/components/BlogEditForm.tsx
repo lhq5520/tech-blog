@@ -8,9 +8,22 @@ interface BlogEditFormProps {
   onContentChange: (content: string) => void
   onSave: () => void
   onCancel: () => void
+  onImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onRemoveImage?: () => void
+  uploadingImage?: boolean
 }
 
-const BlogEditForm = ({ formData, errors, onChange, onContentChange, onSave, onCancel }: BlogEditFormProps) => {
+const BlogEditForm = ({ 
+  formData, 
+  errors, 
+  onChange, 
+  onContentChange, 
+  onSave, 
+  onCancel,
+  onImageUpload,
+  onRemoveImage,
+  uploadingImage = false
+}: BlogEditFormProps) => {
   return (
     <form>
       {/* Title Field */}
@@ -43,6 +56,56 @@ const BlogEditForm = ({ formData, errors, onChange, onContentChange, onSave, onC
           className="form-control"
         />
         {errors.subtitle && <p className="text-danger">{errors.subtitle}</p>}
+      </div>
+
+      {/* Cover Image Field */}
+      <div className="mb-3">
+        <label htmlFor="coverImage" className="form-label">
+          Cover Image (Optional):
+        </label>
+        {formData.coverImage ? (
+          <div className="mb-2">
+            <img
+              src={formData.coverImage}
+              alt="Cover preview"
+              style={{
+                maxWidth: "100%",
+                maxHeight: "300px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                marginBottom: "10px",
+              }}
+            />
+            {onRemoveImage && (
+              <button
+                type="button"
+                className="btn btn-sm btn-danger"
+                onClick={onRemoveImage}
+              >
+                Remove Image
+              </button>
+            )}
+          </div>
+        ) : (
+          onImageUpload && (
+            <input
+              className="form-control"
+              type="file"
+              id="coverImage"
+              accept="image/*"
+              onChange={onImageUpload}
+              disabled={uploadingImage}
+            />
+          )
+        )}
+        {uploadingImage && (
+          <div className="mt-2">
+            <div className="spinner-border spinner-border-sm" role="status">
+              <span className="visually-hidden">Uploading...</span>
+            </div>
+            <span className="ms-2">Uploading image...</span>
+          </div>
+        )}
       </div>
 
       {/* Content Field */}

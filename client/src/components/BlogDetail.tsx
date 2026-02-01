@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PageLayout from "./PageLayout";
 import { fetchSinglePost, updatePost } from "../api/posts";
 import { useParams } from "react-router-dom";
-import { type Post } from "../types";
+import { type Post, type BlogFormData } from "../types";
 import { useAuth } from "../context/AuthContext";
 import BlogEditForm from "./BlogEditForm";
 import { useBlogForm } from "../hooks/useBlogForm";
 import { showSuccess, showError } from "../utils/toast";
 import CommentSection from "./CommentSection";
+import { useAutoSave } from "../hooks/useAutoSave";
+import DraftRestoreBanner from "./DraftRestoreBanner";
+import { uploadImage, deleteImage } from "../api/upload";
 import "../styles/blogContent.css";
 
 const BlogDetail = (): React.ReactElement => {
@@ -17,6 +20,11 @@ const BlogDetail = (): React.ReactElement => {
   const [blog, setBlog] = useState<Post | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [editMode, setEditMode] = useState<boolean>(false); // Toggle for edit mode
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | null>(null);
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+  const [draftData, setDraftData] = useState<BlogFormData | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const draftRestoredRef = useRef<string | null>(null); // Track which draft has been restored
 
   const {
     formData,
@@ -26,6 +34,22 @@ const BlogDetail = (): React.ReactElement => {
     handleChange,
     validateForm,
   } = useBlogForm();
+
+  // Auto-save hook for edit mode
+  const draftStorageKey = id ? `blog_draft_edit_${id}` : "";
+  const { loadDraft, clearDraft, getLastSavedTime } = useAutoSave({
+    formData,
+    storageKey: draftStorageKey,
+    debounceMs: 2000,
+    enabled: editMode && !!id,
+    onSaving: () => {
+      setSaveStatus("saving");
+    },
+    onSave: () => {
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus(null), 2000);
+    },
+  });
 
   // Load the blog when the component mounts
   useEffect(() => {
@@ -37,6 +61,7 @@ const BlogDetail = (): React.ReactElement => {
           title: data.title,
           subtitle: data.subtitle,
           content: data.content,
+          coverImage: data.coverImage || "",
         });
       } catch (error) {
         console.error("Error fetching blog:", error);
@@ -47,6 +72,40 @@ const BlogDetail = (): React.ReactElement => {
     loadBlog();
   }, [id]);
 
+  // Load draft when entering edit mode (only once per edit session)
+  useEffect(() => {
+    if (editMode && id && blog) {
+      // Check if we've already processed the draft for this edit session
+      if (draftRestoredRef.current === id) return;
+      
+      const draft = loadDraft();
+      if (draft && (draft.title !== blog.title || draft.subtitle !== blog.subtitle || draft.content !== blog.content)) {
+        draftRestoredRef.current = id; // Mark as processed for this edit session
+        setDraftData(draft);
+        setShowDraftBanner(true);
+      }
+    } else {
+      // Reset when exiting edit mode
+      draftRestoredRef.current = null;
+      setShowDraftBanner(false);
+      setDraftData(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editMode, id, blog]);
+
+  const handleRestoreDraft = () => {
+    if (draftData) {
+      setFormData(draftData);
+      setShowDraftBanner(false);
+    }
+  };
+
+  const handleDiscardDraft = () => {
+    clearDraft();
+    setDraftData(null);
+    setShowDraftBanner(false);
+  };
+
   // Save the updated blog
   const handleSave = async (): Promise<void> => {
     const validationErrors = validateForm();
@@ -56,8 +115,27 @@ const BlogDetail = (): React.ReactElement => {
     }
 
     try {
+      // If cover image was changed and old image exists, delete old image from Cloudinary
+      const oldImageUrl = blog?.coverImage;
+      const newImageUrl = formData.coverImage;
+      
+      if (oldImageUrl && 
+          oldImageUrl !== newImageUrl && 
+          oldImageUrl.includes('cloudinary.com') &&
+          (!newImageUrl || newImageUrl !== oldImageUrl)) {
+        // Old image exists and is different from new one, delete it
+        try {
+          await deleteImage(oldImageUrl);
+          console.log("Old cover image deleted from Cloudinary");
+        } catch (error: any) {
+          console.error("Error deleting old image from Cloudinary:", error);
+          // Continue with update even if old image deletion fails
+        }
+      }
+
       const updatedBlog = await updatePost(id!, formData);
       setBlog(updatedBlog); // Update the local state with the saved data
+      clearDraft(); // Clear draft after successful save
       setEditMode(false); // Exit edit mode
       showSuccess("Blog updated successfully!");
     } catch (error: any) {
@@ -74,8 +152,67 @@ const BlogDetail = (): React.ReactElement => {
       title: blog!.title,
       subtitle: blog!.subtitle,
       content: blog!.content,
+      coverImage: blog!.coverImage || "",
     }); // Reset to original data
+    clearDraft(); // Clear draft when canceling
     setEditMode(false);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showError("Invalid file type", "Please select an image file.");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showError("File too large", "Please select an image smaller than 5MB.");
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const response = await uploadImage(file);
+      console.log("Upload response:", response);
+      if (response.url) {
+        setFormData({ ...formData, coverImage: response.url });
+        showSuccess("Cover image uploaded successfully!");
+      } else {
+        throw new Error("No URL returned from upload");
+      }
+    } catch (error: any) {
+      console.error("Error uploading image:", error);
+      const errorMessage = error?.message || "Failed to upload image. Please check your connection and try again.";
+      showError("Failed to upload image", errorMessage);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    const imageUrl = formData.coverImage;
+    if (!imageUrl) {
+      return;
+    }
+
+    // If it's a Cloudinary URL, delete it from Cloudinary
+    if (imageUrl.includes('cloudinary.com')) {
+      try {
+        await deleteImage(imageUrl);
+        showSuccess("Cover image removed and deleted from Cloudinary!");
+      } catch (error: any) {
+        console.error("Error deleting image from Cloudinary:", error);
+        // Still remove from form even if Cloudinary delete fails
+        showError("Failed to delete image from Cloudinary", error?.message || "Image removed locally but may still exist in Cloudinary.");
+      }
+    }
+
+    // Remove from form data
+    setFormData({ ...formData, coverImage: "" });
   };
 
   // Early returns for loading/error states
@@ -93,7 +230,23 @@ const BlogDetail = (): React.ReactElement => {
     >
       {/* Edit Mode */}
       {editMode ? (
-        <section className="container mt-4">
+        <section 
+          className="container mt-4"
+          style={{
+            marginBottom: showDraftBanner ? "80px" : "0",
+          }}
+        >
+          {/* Auto-save status indicator */}
+          {saveStatus && (
+            <div className="alert alert-info d-flex align-items-center gap-2 mb-3">
+              <div className="spinner-border spinner-border-sm" role="status" style={{ display: saveStatus === "saving" ? "block" : "none" }}>
+                <span className="visually-hidden">Saving...</span>
+              </div>
+              <span>
+                {saveStatus === "saved" ? "✓ 草稿已自动保存 / Draft auto-saved" : "正在保存... / Saving..."}
+              </span>
+            </div>
+          )}
           <BlogEditForm
             formData={formData}
             errors={errors}
@@ -101,6 +254,9 @@ const BlogDetail = (): React.ReactElement => {
             onContentChange={(content) => setFormData({ ...formData, content })}
             onSave={handleSave}
             onCancel={handleCancel}
+            onImageUpload={handleImageUpload}
+            onRemoveImage={handleRemoveImage}
+            uploadingImage={uploadingImage}
           />
         </section>
       ) : (
@@ -144,6 +300,16 @@ const BlogDetail = (): React.ReactElement => {
           {/* Comment Section */}
           <CommentSection postId={id} />
         </section>
+      )}
+
+      {/* Draft restore banner */}
+      {showDraftBanner && draftData && editMode && (
+        <DraftRestoreBanner
+          draft={draftData}
+          lastSavedTime={getLastSavedTime()}
+          onRestore={handleRestoreDraft}
+          onDiscard={handleDiscardDraft}
+        />
       )}
     </PageLayout>
   );

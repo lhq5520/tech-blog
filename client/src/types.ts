@@ -4,6 +4,7 @@ export interface Post {
   title: string;
   subtitle: string;
   content: string;
+  coverImage?: string;
   createdAt: string;
 }
 
@@ -24,10 +25,13 @@ export interface Comment {
   authorName?: string;
   authorEmail?: string;
   createdAt: string;
+  parentCommentId?: string;
+  replies?: Comment[]; // Nested replies
 }
 
 export type BlogFormData = {
   title: string;
   subtitle: string;
   content: string;
+  coverImage?: string;
 };

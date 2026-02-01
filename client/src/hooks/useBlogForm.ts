@@ -5,6 +5,7 @@ const defaultFormData: BlogFormData = {
   title: "",
   subtitle: "",
   content: "",
+  coverImage: "",
 };
 
 export const useBlogForm = (initialData: BlogFormData = defaultFormData) => {

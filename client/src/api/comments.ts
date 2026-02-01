@@ -13,13 +13,15 @@ export const createComment = (
   postId: string, 
   content: string, 
   authorName?: string, 
-  authorEmail?: string
+  authorEmail?: string,
+  parentCommentId?: string
 ): Promise<Comment> => {
   return post<Comment>(COMMENTS_ENDPOINT, { 
     postId, 
     content,
     authorName,
-    authorEmail 
+    authorEmail,
+    parentCommentId
   });
 };
 

@@ -7,6 +7,7 @@ interface BlogPublish {
   title: string;
   subtitle: string;
   content: string;
+  coverImage?: string;
 }
 
 export interface PostsResponse {
