@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import PageLayout from "../components/PageLayout";
 import { createPost, fetchAllTags } from "../api/posts";
 import RichTextEditor from "../components/RichTextEditor";
@@ -12,6 +13,7 @@ import { uploadImage, deleteImage } from "../api/upload";
 const DRAFT_STORAGE_KEY = "blog_draft_new_post";
 
 const WritePost = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
@@ -263,6 +265,11 @@ const WritePost = () => {
       setFormData({ title: "", subtitle: "", content: "", coverImage: "", tags: [] });
       setError("");
       showSuccess("Post created successfully!");
+      
+      // Navigate to the blog detail page
+      if (newPost._id) {
+        navigate(`/blogDetail/${newPost._id}`);
+      }
     } catch (error: any) {
       console.error("Error creating post:", error);
       const errorMessage = error?.message || "Failed to create post. Please check your connection and try again.";

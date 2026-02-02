@@ -83,7 +83,12 @@ router.get("/", async (req:Request, res:Response): Promise<void> => {
       query.tags = { $in: [tagFilter.trim()] };
     }
     
-    const posts = await Post.find(query).sort({ createdAt: -1 });
+    // Exclude full content from list view to reduce response size
+    // This prevents response size issues with long blog posts
+    const posts = await Post.find(query)
+      .select('-content') // Exclude full content
+      .sort({ createdAt: -1 });
+    
     res.json(posts);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch posts" });
@@ -131,8 +136,10 @@ router.get("/pagelimit", async (req:Request, res:Response): Promise<void> => {
     }
 
     // 5. Parallel queries: fetch posts list + fetch total post count
+    // Exclude full content from list view to reduce response size
     const [posts, total] = await Promise.all([
       Post.find(query)
+        .select('-content') // Exclude full content to reduce response size
         .sort(sortObject)
         .skip(skip)              // Skip previous posts
         .limit(limit),           // Fetch only 'limit' posts
