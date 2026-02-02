@@ -1,4 +1,4 @@
-import { type Post} from '../types';
+import { type Post, type PostSummary} from '../types';
 import {get, post, put, del} from './client'
 
 const POSTS_ENDPOINT = 'api/posts';
@@ -67,8 +67,9 @@ export const fetchSinglePost = (blogId:string): Promise<Post> => {
 }
 
 // publish a blog
-export const createPost = (data:BlogPublish): Promise<Post> => {
-  return post<Post>(POSTS_ENDPOINT, data);
+// Returns PostSummary (without full content) to avoid large response size
+export const createPost = (data:BlogPublish): Promise<PostSummary> => {
+  return post<PostSummary>(POSTS_ENDPOINT, data);
 }
 
 //update a blog

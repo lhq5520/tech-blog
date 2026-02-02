@@ -39,7 +39,20 @@ router.post("/", verifyToken, async (req:Request, res:Response): Promise<void> =
       userId: req.user!.id, // Link to the authenticated user
     });
     await newPost.save();
-    res.status(201).json(newPost);
+    
+    // Return a simplified response without full content to avoid large response size issues
+    // The client can fetch the full post details separately if needed
+    const responsePost = {
+      _id: newPost._id,
+      title: newPost.title,
+      subtitle: newPost.subtitle,
+      coverImage: newPost.coverImage,
+      tags: newPost.tags,
+      userId: newPost.userId,
+      views: newPost.views,
+      createdAt: newPost.createdAt,
+    };
+    res.status(201).json(responsePost);
   } catch (error: any) {
     console.error("Error creating post:", error);
     

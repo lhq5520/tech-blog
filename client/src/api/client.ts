@@ -51,13 +51,24 @@ const request = async <T>(endpoint: string, options: RequestInit = {}): Promise<
       return undefined as T;
     }
 
-    // Some servers omit body with 200/201; guard to avoid JSON parse errors
-    const contentLength = response.headers.get('content-length');
-    if (contentLength === '0' || contentLength === null) {
+    // Check if response has a body by reading the text first
+    // This handles cases where content-length header might be missing (chunked encoding)
+    const text = await response.text();
+    
+    // If body is empty, return undefined
+    if (!text || text.trim().length === 0) {
       return undefined as T;
     }
 
-    return response.json();
+    // Try to parse JSON, with better error handling for large responses
+    try {
+      return JSON.parse(text) as T;
+    } catch (parseError) {
+      console.error('Failed to parse JSON response:', parseError);
+      console.error('Response text length:', text.length);
+      console.error('Response text preview:', text.substring(0, 200));
+      throw new Error(`Failed to parse server response. The response might be too large or invalid JSON.`);
+    }
 
   } catch(error: any){
     console.error('API request error:', error);

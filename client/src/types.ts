@@ -10,6 +10,18 @@ export interface Post {
   createdAt: string;
 }
 
+// Post summary without full content (used for list views and create/update responses)
+export interface PostSummary {
+  _id: string;
+  userId: string;
+  title: string;
+  subtitle: string;
+  coverImage?: string;
+  tags?: string[];
+  views?: number;
+  createdAt: string;
+}
+
 export interface User {
   id: string;
   email: string;
